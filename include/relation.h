@@ -4,21 +4,25 @@
 #define RELATION_NAME_SIZE 107
 #define RELATION_PAGE_SIZE 4
 
-#define TYPE_INT 0
-#define TYPE_STRING 1
+enum key_type {
+  TYPE_INT,
+  TYPE_STRING
+};
 
 typedef struct relation_s relation_t;
 typedef struct relation_page_s relation_page_t;
 
 
 struct relation_s {
-  char name[RELATION_NAME_SIZE];
-  uint8_t key_type; // key_type = TYPE_INT or TYPE_STRING
+  enum key_type ktype;
   int key_length;
   int record_length;
 
   tree_page_ptr_t root;
   directory_page_t* page_header;
+
+  char name[RELATION_NAME_SIZE];
+
 } __attribute__((packed));;
 
 
