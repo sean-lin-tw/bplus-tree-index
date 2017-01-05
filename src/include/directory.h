@@ -1,7 +1,8 @@
 #include <stdint.h>
 
+#define BITMAP_SIZE 4
 #define DIRECTORY_PAGE_NUM 63
-#define RECORD_PAGE_BUFFER_SIZE 497
+#define RECORD_PAGE_BUFFER_SIZE 495
 
 typedef struct directory_page_s directory_page_t;
 typedef struct record_entry_s record_entry_t;
@@ -9,11 +10,10 @@ typedef struct record_page_s record_page_t;
 
 
 struct record_page_s {
+  uint32_t bitmap[BITMAP_SIZE];
   uint8_t total_slot;
-  uint32_t bitmap;
   uint8_t buffer[RECORD_PAGE_BUFFER_SIZE];
-};
-// __attribute__((aligned(512)));;
+} __attribute__((packed));;
 
 
 struct record_entry_s {
