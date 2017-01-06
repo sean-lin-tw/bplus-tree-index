@@ -49,7 +49,7 @@ uint16_t rpage__insert_record(record_page_entry_t* page_entry,
     sid = rpage__scan_full(page_entry, slot_entry);
 
     // Insert the slot_entry to the page
-    memcpy(&page->buffer[(RECORD_PAGE_BUFFER_SIZE - 1) - (sid*PAGE_ID_SIZE + 3)],
+    memcpy(&page->buffer[RECORD_PAGE_BUFFER_SIZE - PAGE_ID_SIZE*(sid + 1)],
            slot_entry,
            sizeof(slot_entry_t));
   }
@@ -89,7 +89,7 @@ void rpage__show_page(record_page_entry_t* page_entry, uint16_t record_size, key
 
   for(uint16_t i=0; i<page->slot_num; i++) {
     memcpy(slot_entry,
-           &page->buffer[(RECORD_PAGE_BUFFER_SIZE - 1) - (i*PAGE_ID_SIZE + 3)],
+           &page->buffer[RECORD_PAGE_BUFFER_SIZE - PAGE_ID_SIZE*(i + 1)],
            sizeof(slot_entry_t));
 
     if(slot_entry->reclen != 0){
@@ -133,7 +133,7 @@ uint16_t rpage__scan_full(record_page_entry_t* page_entry, slot_entry_t* target)
   // Scan the whole page and find free slots
   for (uint16_t i=0; i<page->slot_num; i++){
     memcpy(temp_slot_entry,
-           &page->buffer[(RECORD_PAGE_BUFFER_SIZE - 1) - (i*PAGE_ID_SIZE + 3)],
+           &page->buffer[RECORD_PAGE_BUFFER_SIZE - PAGE_ID_SIZE*(i + 1)],
            sizeof(slot_entry_t));
     if(temp_slot_entry->reclen == 0){
       free_page_count++;
