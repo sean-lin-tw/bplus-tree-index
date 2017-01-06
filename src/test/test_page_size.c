@@ -24,14 +24,17 @@ int main(){
 
   printf("\n-----------------------------Size of entries-----------------------------\n");
 
+  slot_entry_t* test_slot_entry = malloc(sizeof(slot_entry_t));
+  printf("Size of slot_entry: %d\n", sizeof(*test_slot_entry));
+
   data_entry_t* test_data_entry = malloc(sizeof(data_entry_t));
   printf("Size of data_entry: %d\n", sizeof(*test_data_entry));
 
   tree_entry_t* test_tree_entry = malloc(sizeof(tree_entry_t));
   printf("Size of tree_entry: %d\n", sizeof(*test_tree_entry));
 
-  record_entry_t* test_record_entry = malloc(sizeof(record_entry_t));
-  printf("Size of record_entry: %d\n", sizeof(*test_record_entry));
+  record_page_entry_t* test_record_page_entry = malloc(sizeof(record_page_entry_t));
+  printf("Size of record_page_entry: %d\n", sizeof(*test_record_page_entry));
 
   printf("\n-----------------------------Size of others-----------------------------\n");
 

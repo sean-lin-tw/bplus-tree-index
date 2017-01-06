@@ -1,3 +1,6 @@
+#ifndef BPTREE_PAGE
+#define BPTREE_PAGE
+
 #include <stdint.h>
 
 #define PAGE_ENTRY_SIZE 35
@@ -57,3 +60,5 @@ struct leaf_page_s {
   data_entry_t dentry[PAGE_ENTRY_SIZE];
 };
 // __attribute__((aligned(512)));;
+
+#endif

@@ -1,5 +1,7 @@
+#ifndef RELATION_PAGE
+#define RELATION_PAGE
+
 #include "directory.h"
-#include "bptree.h"
 
 #define RELATION_NAME_SIZE 107
 #define RELATION_PAGE_SIZE 4
@@ -31,3 +33,5 @@ struct relation_page_s {
   relation_t relations[RELATION_PAGE_SIZE];
 };
 // __attribute__((aligned(512)));;
+
+#endif
