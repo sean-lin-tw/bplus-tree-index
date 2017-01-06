@@ -7,6 +7,7 @@
 // When the page is NOT full
 uint16_t rpage__insert_record(record_page_entry_t* page_entry,
                               uint16_t record_size,
+                              key_t key_type,
                               index_t key,
                               const char* remained_record)
 {
@@ -56,7 +57,7 @@ uint16_t rpage__insert_record(record_page_entry_t* page_entry,
 
 
   // Insert the record to the page
-  uint16_t key_size = (key.i == 0 ? 10 : 4);
+  uint16_t key_size = (key_type == TYPE_INT ? 4 : 10);
 
   memcpy(&page->buffer[slot_entry->offset], (const void *)&key, sizeof(uint8_t)*key_size);
   memcpy(&page->buffer[slot_entry->offset+key_size],
