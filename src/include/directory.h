@@ -3,7 +3,7 @@
 
 #include "bptree.h"
 
-#define BITMAP_SIZE 4
+#define PAGE_ID_SIZE 4
 #define DIRECTORY_PAGE_NUM 63
 #define RECORD_PAGE_BUFFER_SIZE 506
 
@@ -18,7 +18,10 @@ uint16_t rpage__insert_record(record_page_entry_t* page_entry,
                               index_t key,
                               const char* remained_record);
 
-void rpage__show_page(record_page_entry_t* page_entry, uint16_t record_size, int key_type);
+void rpage__show_page(record_page_entry_t* page_entry, uint16_t record_size, key_t key_type);
+
+uint16_t rpage__scan_full(record_page_entry_t* page_entry, slot_entry_t* target); // Return: sid
+
 
 struct slot_entry_s {
   uint16_t offset;

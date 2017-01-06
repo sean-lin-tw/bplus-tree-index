@@ -14,6 +14,12 @@ typedef union tree_page_ptr_u tree_page_ptr_t;
 typedef union index_u index_t;
 
 
+typedef enum key_type_e {
+  TYPE_INT,
+  TYPE_STRING
+} key_t;
+
+
 union index_u {
   int i;
   char str[STRING_KEY_SIZE];

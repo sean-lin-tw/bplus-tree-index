@@ -6,17 +6,11 @@
 #define RELATION_NAME_SIZE 107
 #define RELATION_PAGE_SIZE 4
 
-enum key_type {
-  TYPE_INT,
-  TYPE_STRING
-};
-
 typedef struct relation_s relation_t;
 typedef struct relation_page_s relation_page_t;
 
-
 struct relation_s {
-  enum key_type ktype;
+  key_t ktype;
   int key_length;
   int record_length;
 

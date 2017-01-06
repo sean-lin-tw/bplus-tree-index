@@ -37,6 +37,6 @@ int main() {
   rpage__insert_record(test_rpage_entry, test_record_size, test_key, rem_rec);
 
   //----------------------------------Show the page----------------------------------
-  rpage__show_page(test_rpage_entry, test_record_size, 0);
+  rpage__show_page(test_rpage_entry, test_record_size, TYPE_INT);
 
 }
