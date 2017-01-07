@@ -4,13 +4,20 @@
 #include "bptree.h"
 
 #define PAGE_ID_SIZE 4
-#define DIRECTORY_PAGE_NUM 63
+#define DIRECTORY_ENTRY_NUM 63
 #define RECORD_PAGE_BUFFER_SIZE 506
 
 typedef struct directory_page_s directory_page_t;
 typedef struct record_page_entry_s record_page_entry_t;
 typedef struct record_page_s record_page_t;
 typedef struct slot_entry_s slot_entry_t;
+
+
+data_entry_t dpage__insert_record(directory_page_t* cur_dirct,
+                           uint16_t record_size,
+                           key_t key_type,
+                           index_t key,
+                           const char* remained_record);
 
 
 uint16_t rpage__insert_record(record_page_entry_t* page_entry,
@@ -59,7 +66,7 @@ struct directory_page_s {
   uint16_t pid_base;
 
   directory_page_t* next;
-  record_page_entry_t entry[DIRECTORY_PAGE_NUM];
+  record_page_entry_t entry[DIRECTORY_ENTRY_NUM];
 };
 
 #endif

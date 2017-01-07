@@ -4,6 +4,68 @@
 
 #include "../include/relation.h"
 
+
+data_entry_t dpage__insert_record(directory_page_t* cur_dirct,
+                           uint16_t record_size,
+                           key_t key_type,
+                           index_t key,
+                           const char* remained_record)
+{
+  // Create a key-rid pair
+  data_entry_t key_rid = {-1, -1};
+
+  if(cur_dirct == NULL)
+    return key_rid;
+
+  if(cur_dirct->is_full && cur_dirct->next!=NULL) {
+    return dpage__insert_record(cur_dirct->next, record_size, key_type, key, remained_record);
+
+  } else if (cur_dirct->is_full && cur_dirct->next==NULL) {
+    cur_dirct->next = calloc(1, sizeof(directory_page_t));
+    cur_dirct->next->pid_base = cur_dirct->pid_base + DIRECTORY_ENTRY_NUM;
+
+    return dpage__insert_record(cur_dirct->next, record_size, key_type, key, remained_record);
+
+  } else {
+
+
+    // Set the key of the key-rid pair
+    if(key_type == TYPE_INT)
+      key_rid.key.i = key.i;
+    else
+      strncpy(key_rid.key.str, key.str, 10);
+
+    // Find a suitable page to insert
+    for(int i=0; i<DIRECTORY_ENTRY_NUM; i++) {
+      if(!cur_dirct->entry[i].is_full) {
+
+        // If the page is a new page
+        record_page_entry_t* cur_entry = &cur_dirct->entry[i];
+        if(cur_entry->rpage == NULL) {
+          cur_entry->pid = i + cur_dirct->pid_base;
+          cur_entry->rpage = calloc(1, sizeof(record_page_t));
+          cur_entry->rpage->dirct_end_ptr = RECORD_PAGE_BUFFER_SIZE-1;
+        }
+
+        // Set the pid and insert the record
+        key_rid.pid = cur_entry->pid;
+        key_rid.slot_num =  rpage__insert_record(&cur_dirct->entry[i], record_size, key_type, key, remained_record);
+
+        // Check if the page is full after we insert a record
+        if(cur_dirct->entry[i].is_full) {
+          if(++cur_dirct->fullpage_num == DIRECTORY_ENTRY_NUM)
+           cur_dirct->is_full = 1;
+        }
+
+        break;
+      }
+    }
+
+    return key_rid;
+  }
+}
+
+
 // Insert when the page is NOT full, and return sid
 uint16_t rpage__insert_record(record_page_entry_t* page_entry,
                               uint16_t record_size,
@@ -104,7 +166,7 @@ void rpage__show_record(record_page_entry_t* page_entry,
     printf("        offset-%d, reclen-%d\n", slot_entry->offset, slot_entry->reclen);
 
   } else {
-    printf("Slot-%d: is empty!\n", sid);
+    printf("Warning: Slot-%d is empty!\n", sid);
   }
 
   free(slot_entry);
