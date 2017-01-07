@@ -41,11 +41,21 @@ int main(){
   }
 
   //-------------------- Display a single record of this relation with PID --------------------
-  relation__find(cur_relation, 36, 2);
-  relation__find(cur_relation, 24, 3);
-  relation__find(cur_relation, 68, 1);
-  relation__find(cur_relation, 68, 23);
-  relation__find(cur_relation, 500, 3);
+  dpage__show_record(cur_relation->page_header,
+                     cur_relation->record_length,
+                     cur_relation->ktype, 36, 2);
+  dpage__show_record(cur_relation->page_header,
+                     cur_relation->record_length,
+                     cur_relation->ktype, 24, 3);
+  dpage__show_record(cur_relation->page_header,
+                     cur_relation->record_length,
+                     cur_relation->ktype, 68, 1);
+  dpage__show_record(cur_relation->page_header,
+                     cur_relation->record_length,
+                     cur_relation->ktype, 68, 23);
+  dpage__show_record(cur_relation->page_header,
+                     cur_relation->record_length,
+                     cur_relation->ktype, 500, 3);
 
   //-------------------- Create another relation and display the information --------------------
   relation__create(&db, "Professor", TYPE_STRING, 25);

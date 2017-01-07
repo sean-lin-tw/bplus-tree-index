@@ -6,10 +6,10 @@
 
 
 data_entry_t dpage__insert_record(directory_page_t* cur_dirct,
-                           uint16_t record_size,
-                           key_t key_type,
-                           index_t key,
-                           const char* remained_record)
+                                  uint16_t record_size,
+                                  key_t key_type,
+                                  index_t key,
+                                  const char* remained_record)
 {
   // Create a key-rid pair
   data_entry_t key_rid = {-1, -1};
@@ -62,6 +62,28 @@ data_entry_t dpage__insert_record(directory_page_t* cur_dirct,
     }
 
     return key_rid;
+  }
+}
+
+
+void dpage__show_record(directory_page_t* cur_dirct,
+                        uint16_t record_size,
+                        key_t key_type,
+                        uint16_t pid,
+                        uint16_t slot_number)
+{
+  int dirct_id = pid / DIRECTORY_ENTRY_NUM;
+  int dirct_entry_id = pid % DIRECTORY_ENTRY_NUM;
+
+  while(cur_dirct!=NULL && cur_dirct->pid_base != dirct_id*DIRECTORY_ENTRY_NUM)
+    cur_dirct = cur_dirct->next;
+
+  if(cur_dirct==NULL){
+    fprintf(stderr, "Warning: Cannot find the record with <pid, slot#>: <%d, %d>\n", pid, slot_number);
+    return;
+  } else {
+    printf("Pid: %d\n", pid);
+    rpage__show_record(&cur_dirct->entry[dirct_entry_id], slot_number, record_size, key_type);
   }
 }
 
@@ -196,7 +218,8 @@ void rpage__show_page(record_page_entry_t* page_entry, uint16_t record_size, key
 }
 
 
-uint16_t rpage__scan_full(record_page_entry_t* page_entry, slot_entry_t* target){
+uint16_t rpage__scan_full(record_page_entry_t* page_entry, slot_entry_t* target)
+{
 
   record_page_t* page = page_entry->rpage;
   uint8_t free_page_count = 0;

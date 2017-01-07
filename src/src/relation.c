@@ -57,21 +57,6 @@ void relation__find(relation_t* relation, uint16_t pid, uint16_t slot_number) {
     return;
   }
 
-  directory_page_t* cur_dirct = relation->page_header;
-  int dirct_id = pid / DIRECTORY_ENTRY_NUM;
-  int dirct_entry_id = pid % DIRECTORY_ENTRY_NUM;
-
-  while(cur_dirct!=NULL && cur_dirct->pid_base != dirct_id*DIRECTORY_ENTRY_NUM)
-    cur_dirct = cur_dirct->next;
-
-  if(cur_dirct==NULL){
-    fprintf(stderr, "Warning: Cannot find the record with <pid, slot#>: <%d, %d>\n", pid, slot_number);
-    return;
-  } else {
-    printf("Pid: %d\n", pid);
-    rpage__show_record(&cur_dirct->entry[dirct_entry_id], slot_number, relation->record_length, relation->ktype);
-  }
-
 }
 
 

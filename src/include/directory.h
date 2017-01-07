@@ -14,11 +14,16 @@ typedef struct slot_entry_s slot_entry_t;
 
 
 data_entry_t dpage__insert_record(directory_page_t* cur_dirct,
-                           uint16_t record_size,
-                           key_t key_type,
-                           index_t key,
-                           const char* remained_record);
+                                  uint16_t record_size,
+                                  key_t key_type,
+                                  index_t key,
+                                  const char* remained_record);
 
+void dpage__show_record(directory_page_t* cur_dirct,
+                        uint16_t record_size,
+                        key_t key_type,
+                        uint16_t pid,
+                        uint16_t slot_number);
 
 uint16_t rpage__insert_record(record_page_entry_t* page_entry,
                               uint16_t record_size,
