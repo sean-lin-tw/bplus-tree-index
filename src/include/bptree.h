@@ -52,8 +52,7 @@ struct branch_page_s {
   branch_page_t* uplevel;
   tree_entry_t tentry[PAGE_ENTRY_SIZE];
   tree_page_ptr_t last_ptr;
-};
-// __attribute__((aligned(512)));;
+} __attribute__((aligned(512)));;
 
 
 struct leaf_page_s {
@@ -64,7 +63,6 @@ struct leaf_page_s {
   leaf_page_t* next;
 
   data_entry_t dentry[PAGE_ENTRY_SIZE];
-};
-// __attribute__((aligned(512)));;
+} __attribute__((aligned(512)));;
 
 #endif
