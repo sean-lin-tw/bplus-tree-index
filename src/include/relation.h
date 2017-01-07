@@ -18,7 +18,7 @@ data_entry_t relation__insert(relation_t* relation,
                               index_t key,
                               const char* remained_record);
 
-void relation__find(relation_t* relation, uint16_t pid, uint16_t slot_number);
+void relation__find(relation_t* relation, index_t key);
 
 void relation_display_info(relation_t* relation);
 

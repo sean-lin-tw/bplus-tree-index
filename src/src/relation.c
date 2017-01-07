@@ -51,7 +51,8 @@ data_entry_t relation__insert(relation_t* relation,
 }
 
 
-void relation__find(relation_t* relation, uint16_t pid, uint16_t slot_number) {
+void relation__find(relation_t* relation, index_t key)
+{
   if(relation->page_header == NULL){
     fprintf(stderr, "This relation is empty!\n");
     return;
