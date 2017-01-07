@@ -31,18 +31,28 @@ int main() {
   rem_rec = "QQQQQ";
   rpage__insert_record(test_rpage_entry, test_record_size, TYPE_INT, test_key, rem_rec);
 
-  //----------------------------------Show the page----------------------------------
+
+  //----------------------------------Show the whole page----------------------------------
+  printf("\n*************************\n");
+  printf("| Show the whole record |\n");
+  printf("*************************\n");
   rpage__show_page(test_rpage_entry, test_record_size, TYPE_INT);
 
 
+  //----------------------------------Show single record----------------------------------
+  printf("\n**********************\n");
+  printf("| Show single record |\n");
+  printf("**********************\n");
+  rpage__show_record(test_rpage_entry, 2, test_record_size, TYPE_INT);
 
 
-  printf("========================\n");
+
+
+  printf("\n************************\n");
   printf("| Clear the whole page |\n");
-  printf("========================\n\n");
+  printf("************************\n\n");
   memset(test_rpage, 0, sizeof(record_page_t));
   test_rpage->dirct_end_ptr = RECORD_PAGE_BUFFER_SIZE-1;
-
 
 
 
@@ -62,7 +72,10 @@ int main() {
   strncpy(test_key.str, rem_rec, 10);
   rpage__insert_record(test_rpage_entry, test_record_size, TYPE_STRING, test_key, rem_rec);
 
-  //----------------------------------Show the page----------------------------------
+  //----------------------------------Show the whole page----------------------------------
+  printf("\n*************************\n");
+  printf("| Show the whole record |\n");
+  printf("*************************\n");
   rpage__show_page(test_rpage_entry, test_record_size, TYPE_STRING);
 
 

@@ -4,7 +4,7 @@
 
 #include "../include/relation.h"
 
-// When the page is NOT full
+// Insert when the page is NOT full, and return sid
 uint16_t rpage__insert_record(record_page_entry_t* page_entry,
                               uint16_t record_size,
                               key_t key_type,
@@ -69,6 +69,48 @@ uint16_t rpage__insert_record(record_page_entry_t* page_entry,
 }
 
 
+void rpage__show_record(record_page_entry_t* page_entry,
+                        uint16_t sid,
+                        uint16_t record_size,
+                        key_t key_type)
+{
+  if(page_entry==NULL)
+    return;
+
+  record_page_t* page = page_entry->rpage;
+  slot_entry_t* slot_entry = calloc(1, sizeof(slot_entry_t));
+
+  index_t key;
+  int key_size = (key_type == TYPE_INT ? 4 : 10);
+  char* remained_record = calloc((record_size-key_size), sizeof(uint8_t));
+
+  memcpy(slot_entry,
+         &page->buffer[RECORD_PAGE_BUFFER_SIZE - PAGE_ID_SIZE*(sid + 1)],
+         sizeof(slot_entry_t));
+
+  if(slot_entry->reclen != 0){
+    // Get the record from the record page
+    memcpy(&key, &page->buffer[slot_entry->offset], sizeof(uint8_t)*key_size);
+    memcpy(remained_record,
+           &page->buffer[slot_entry->offset + key_size],
+           sizeof(uint8_t)*(record_size-key_size));
+
+    // Print the whole record
+    if(key_type == TYPE_INT){
+      printf("Slot-%d: key: %d, record: %s\n", sid, key.i, remained_record);
+    } else {
+      printf("Slot-%d: key: %s, record: %s\n", sid, key.str, remained_record);
+    }
+    printf("        offset-%d, reclen-%d\n", slot_entry->offset, slot_entry->reclen);
+
+  } else {
+    printf("Slot-%d: is empty!\n", sid);
+  }
+
+  free(slot_entry);
+  free(remained_record);
+}
+
 
 void rpage__show_page(record_page_entry_t* page_entry, uint16_t record_size, key_t key_type)
 {
@@ -76,51 +118,19 @@ void rpage__show_page(record_page_entry_t* page_entry, uint16_t record_size, key
     return;
 
   record_page_t* page = page_entry->rpage;
-  slot_entry_t* slot_entry = malloc(sizeof(slot_entry_t));
-  int key_size = (key_type == TYPE_INT ? 4 : 10);
 
   printf("======================================================\n");
   printf("Pid: %d\n", page_entry->pid);
   printf("Total slot number: %d\n", page->slot_num);
   printf("------------------------------------------------------\n");
 
-
-  char* remained_record = calloc((record_size-key_size), sizeof(uint8_t));
-  void* key = calloc(key_size, sizeof(uint8_t));
-
-  for(uint16_t i=0; i<page->slot_num; i++) {
-    memcpy(slot_entry,
-           &page->buffer[RECORD_PAGE_BUFFER_SIZE - PAGE_ID_SIZE*(i + 1)],
-           sizeof(slot_entry_t));
-
-    if(slot_entry->reclen != 0){
-      // Get the record from the record page
-      memcpy(key, &page->buffer[slot_entry->offset], sizeof(uint8_t)*key_size);
-      memcpy(remained_record,
-             &page->buffer[slot_entry->offset + key_size],
-             sizeof(uint8_t)*(record_size-key_size));
-
-      // Print the whole record
-      if(key_type == TYPE_INT){
-        printf("Slot-%d: key: %d, record: %s\n", i, *(int*)key, remained_record);
-      } else {
-        printf("Slot-%d: key: %s, record: %s\n", i, key, remained_record);
-      }
-      printf("        offset-%d, reclen-%d\n", slot_entry->offset, slot_entry->reclen);
-
-    } else {
-      printf("Slot-%d: is empty!\n", i);
-    }
-  }
+  for(uint16_t i=0; i<page->slot_num; i++)
+    rpage__show_record(page_entry, i, record_size, key_type);
 
   printf("------------------------------------------------------\n");
   printf("Remained free space: %d bytes\n", page->dirct_end_ptr -page->free_ptr);
   printf("Page is full: ");
   printf("%s", page_entry->is_full ? "True\n\n" : "False\n\n");
-
-  free(slot_entry);
-  free(remained_record);
-  free(key);
 }
 
 

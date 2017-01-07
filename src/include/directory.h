@@ -19,7 +19,14 @@ uint16_t rpage__insert_record(record_page_entry_t* page_entry,
                               index_t key,
                               const char* remained_record);
 
+void rpage__show_record(record_page_entry_t* page_entry,
+                        uint16_t sid,
+                        uint16_t record_size,
+                        key_t key_type);
+
 void rpage__show_page(record_page_entry_t* page_entry, uint16_t record_size, key_t key_type);
+
+
 
 uint16_t rpage__scan_full(record_page_entry_t* page_entry, slot_entry_t* target); // Return: sid
 
