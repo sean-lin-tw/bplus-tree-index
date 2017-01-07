@@ -166,7 +166,7 @@ void rpage__show_record(record_page_entry_t* page_entry,
     printf("        offset-%d, reclen-%d\n", slot_entry->offset, slot_entry->reclen);
 
   } else {
-    printf("Warning: Slot-%d is empty!\n", sid);
+    fprintf(stderr, "Warning: Slot-%d is empty!\n", sid);
   }
 
   free(slot_entry);
