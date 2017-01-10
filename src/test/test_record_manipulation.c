@@ -5,13 +5,13 @@
 #include "../include/relation.h"
 
 int main() {
-  record_page_entry_t* test_rpage_entry = calloc(1, sizeof(record_page_entry_t));
-  record_page_t* test_rpage = calloc(1, sizeof(record_page_t));
+  record_page_entry_t* test_rpage_entry = (record_page_entry_t*) calloc(1, sizeof(record_page_entry_t));
+  record_page_t* test_rpage = (record_page_t*) calloc(1, sizeof(record_page_t));
   test_rpage_entry->rpage = test_rpage;
   test_rpage->dirct_end_ptr = RECORD_PAGE_BUFFER_SIZE-1;
 
   uint16_t test_record_size = 50; // test_record_size is key-size + remained-record-size
-  char* rem_rec = calloc(20, sizeof(char));
+  char* rem_rec = (char*) calloc(20, sizeof(char));
   index_t test_key;
 
   // ----------------------------------Insert record----------------------------------
@@ -43,7 +43,7 @@ int main() {
   printf("\n**********************\n");
   printf("| Show single record |\n");
   printf("**********************\n");
-  rpage__show_record(test_rpage_entry, 2, test_record_size, TYPE_INT);
+  rpage__find_record(test_rpage_entry, 2, test_record_size, TYPE_INT, ACTION_PRINT);
 
 
 
