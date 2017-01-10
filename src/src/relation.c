@@ -28,8 +28,8 @@ relation_t* relation__create(relation_page_t* header,
   new_relation->key_length = (key_type==TYPE_INT ? 4 : 10);
   new_relation->record_length = rec_len;
 
-  new_relation->root.leaf = calloc(1, sizeof(leaf_page_t));
-  new_relation->page_header = calloc(1, sizeof(directory_page_t));
+  new_relation->root.leaf = (leaf_page_t*) calloc(1, sizeof(leaf_page_t));
+  new_relation->page_header = (directory_page_t*) calloc(1, sizeof(directory_page_t));
 
   strncpy(new_relation->name, relation_name, RELATION_NAME_SIZE);
 

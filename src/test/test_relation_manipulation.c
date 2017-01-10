@@ -17,7 +17,7 @@ int main(){
 
   //-------------------- Insert a lot of random records into this relation --------------------
   index_t test_key;
-  char* rem_rec = calloc(20, sizeof(char));
+  char* rem_rec = (char*) calloc(20, sizeof(char));
   relation_t* cur_relation = &db.relations[0];
 
   for(int i=0; i<503; i++) {
@@ -91,7 +91,7 @@ char* randstring(size_t length) {
     char* randomString = NULL;
 
     if (length) {
-        randomString = malloc(sizeof(char) * (length +1));
+        randomString = (char*) malloc(sizeof(char) * (length +1));
 
         if (randomString) {
             for (int n = 0;n < length;n++) {

@@ -21,7 +21,7 @@ data_entry_t dpage__insert_record(directory_page_t* cur_dirct,
     return dpage__insert_record(cur_dirct->next, record_size, key_type, key, remained_record);
 
   } else if (cur_dirct->is_full && cur_dirct->next==NULL) {
-    cur_dirct->next = calloc(1, sizeof(directory_page_t));
+    cur_dirct->next = (directory_page_t*) calloc(1, sizeof(directory_page_t));
     cur_dirct->next->pid_base = cur_dirct->pid_base + DIRECTORY_ENTRY_NUM;
 
     return dpage__insert_record(cur_dirct->next, record_size, key_type, key, remained_record);
@@ -43,7 +43,7 @@ data_entry_t dpage__insert_record(directory_page_t* cur_dirct,
         record_page_entry_t* cur_entry = &cur_dirct->entry[i];
         if(cur_entry->rpage == NULL) {
           cur_entry->pid = i + cur_dirct->pid_base;
-          cur_entry->rpage = calloc(1, sizeof(record_page_t));
+          cur_entry->rpage = (record_page_t*) calloc(1, sizeof(record_page_t));
           cur_entry->rpage->dirct_end_ptr = RECORD_PAGE_BUFFER_SIZE-1;
         }
 
@@ -108,7 +108,7 @@ uint16_t rpage__insert_record(record_page_entry_t* page_entry,
   record_page_t* page = page_entry->rpage;
 
   // Create a slot_entry
-  slot_entry_t* slot_entry = malloc(sizeof(slot_entry_t));
+  slot_entry_t* slot_entry = (slot_entry_t*) malloc(sizeof(slot_entry_t));
   slot_entry->reclen = record_size;
 
   // ----------> If the page has free space
@@ -164,11 +164,11 @@ void rpage__find_record(record_page_entry_t* page_entry,
     return;
 
   record_page_t* page = page_entry->rpage;
-  slot_entry_t* slot_entry = calloc(1, sizeof(slot_entry_t));
+  slot_entry_t* slot_entry = (slot_entry_t*) calloc(1, sizeof(slot_entry_t));
 
   index_t key;
   int key_size = (key_type == TYPE_INT ? 4 : 10);
-  char* remained_record = calloc((record_size-key_size), sizeof(uint8_t));
+  char* remained_record = (char*) calloc((record_size-key_size), sizeof(char));
 
   memcpy(slot_entry,
          &page->buffer[RECORD_PAGE_BUFFER_SIZE - PAGE_ID_SIZE*(sid + 1)],
@@ -237,7 +237,7 @@ uint16_t rpage__scan_full(record_page_entry_t* page_entry, slot_entry_t* target)
   record_page_t* page = page_entry->rpage;
   uint8_t free_page_count = 0;
   uint16_t sid;
-  slot_entry_t* temp_slot_entry = malloc(sizeof(slot_entry_t));
+  slot_entry_t* temp_slot_entry = (slot_entry_t*) malloc(sizeof(slot_entry_t));
 
   // Scan the whole page and find free slots
   for (uint16_t i=0; i<page->slot_num; i++){
