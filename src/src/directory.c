@@ -66,11 +66,12 @@ data_entry_t dpage__insert_record(directory_page_t* cur_dirct,
 }
 
 
-void dpage__show_record(directory_page_t* cur_dirct,
+void dpage__find_record(directory_page_t* cur_dirct,
                         uint16_t record_size,
                         key_t key_type,
                         uint16_t pid,
-                        uint16_t slot_number)
+                        uint16_t slot_number,
+                        action_t action)
 {
   int dirct_id = pid / DIRECTORY_ENTRY_NUM;
   int dirct_entry_id = pid % DIRECTORY_ENTRY_NUM;
@@ -82,8 +83,8 @@ void dpage__show_record(directory_page_t* cur_dirct,
     fprintf(stderr, "Warning: Cannot find the record with <pid, slot#>: <%d, %d>\n", pid, slot_number);
     return;
   } else {
-    printf("Pid: %d\n", pid);
-    rpage__show_record(&cur_dirct->entry[dirct_entry_id], slot_number, record_size, key_type);
+    if(action == ACTION_PRINT) printf("Pid: %d\n", pid);
+    rpage__find_record(&cur_dirct->entry[dirct_entry_id], slot_number, record_size, key_type, action);
   }
 }
 
@@ -153,10 +154,11 @@ uint16_t rpage__insert_record(record_page_entry_t* page_entry,
 }
 
 
-void rpage__show_record(record_page_entry_t* page_entry,
+void rpage__find_record(record_page_entry_t* page_entry,
                         uint16_t sid,
                         uint16_t record_size,
-                        key_t key_type)
+                        key_t key_type,
+                        action_t action)
 {
   if(page_entry==NULL)
     return;
@@ -172,23 +174,34 @@ void rpage__show_record(record_page_entry_t* page_entry,
          &page->buffer[RECORD_PAGE_BUFFER_SIZE - PAGE_ID_SIZE*(sid + 1)],
          sizeof(slot_entry_t));
 
-  if(slot_entry->reclen != 0){
-    // Get the record from the record page
-    memcpy(&key, &page->buffer[slot_entry->offset], sizeof(uint8_t)*key_size);
-    memcpy(remained_record,
-           &page->buffer[slot_entry->offset + key_size],
-           sizeof(uint8_t)*(record_size-key_size));
+  // PRINT the result after we find it
+  if(action == ACTION_PRINT) {
+    if(slot_entry->reclen != 0){
+      // Get the record from the record page
+      memcpy(&key, &page->buffer[slot_entry->offset], sizeof(uint8_t)*key_size);
+      memcpy(remained_record,
+             &page->buffer[slot_entry->offset + key_size],
+             sizeof(uint8_t)*(record_size-key_size));
 
-    // Print the whole record
-    if(key_type == TYPE_INT){
-      printf("Slot-%d: key: %d, record: %s\n", sid, key.i, remained_record);
+      // Print the whole record
+      if(key_type == TYPE_INT){
+        printf("Slot-%d: key: %d, record: %s\n", sid, key.i, remained_record);
+      } else {
+        printf("Slot-%d: key: %s, record: %s\n", sid, key.str, remained_record);
+      }
+      printf("        offset-%d, reclen-%d\n", slot_entry->offset, slot_entry->reclen);
+
     } else {
-      printf("Slot-%d: key: %s, record: %s\n", sid, key.str, remained_record);
+      fprintf(stderr, "Warning: Slot-%d is empty!\n", sid);
     }
-    printf("        offset-%d, reclen-%d\n", slot_entry->offset, slot_entry->reclen);
 
+  // DELETE the result after we find it
   } else {
-    fprintf(stderr, "Warning: Slot-%d is empty!\n", sid);
+    memset(&page->buffer[slot_entry->offset], 0, record_size);
+    slot_entry->reclen = 0;
+    memcpy(&page->buffer[RECORD_PAGE_BUFFER_SIZE - PAGE_ID_SIZE*(sid + 1)],
+           slot_entry,
+           sizeof(slot_entry_t));
   }
 
   free(slot_entry);
@@ -209,7 +222,7 @@ void rpage__show_page(record_page_entry_t* page_entry, uint16_t record_size, key
   printf("------------------------------------------------------\n");
 
   for(uint16_t i=0; i<page->slot_num; i++)
-    rpage__show_record(page_entry, i, record_size, key_type);
+    rpage__find_record(page_entry, i, record_size, key_type, ACTION_PRINT);
 
   printf("------------------------------------------------------\n");
   printf("Remained free space: %d bytes\n", page->dirct_end_ptr -page->free_ptr);
@@ -241,7 +254,7 @@ uint16_t rpage__scan_full(record_page_entry_t* page_entry, slot_entry_t* target)
   }
 
   // Handle the full condition
-  if(free_page_count == 0 || free_page_count == 1)
+  if(free_page_count == 0 || (free_page_count == 1 && target!=NULL))
     page_entry->is_full = 1;
   else
     page_entry->is_full = 0;

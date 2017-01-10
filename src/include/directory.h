@@ -12,6 +12,10 @@ typedef struct record_page_entry_s record_page_entry_t;
 typedef struct record_page_s record_page_t;
 typedef struct slot_entry_s slot_entry_t;
 
+typedef enum action_type_e {
+  ACTION_PRINT,
+  ACTION_DELETE
+} action_t;
 
 data_entry_t dpage__insert_record(directory_page_t* cur_dirct,
                                   uint16_t record_size,
@@ -19,11 +23,12 @@ data_entry_t dpage__insert_record(directory_page_t* cur_dirct,
                                   index_t key,
                                   const char* remained_record);
 
-void dpage__show_record(directory_page_t* cur_dirct,
+void dpage__find_record(directory_page_t* cur_dirct,
                         uint16_t record_size,
                         key_t key_type,
                         uint16_t pid,
-                        uint16_t slot_number);
+                        uint16_t slot_number,
+                        action_t action);
 
 uint16_t rpage__insert_record(record_page_entry_t* page_entry,
                               uint16_t record_size,
@@ -31,10 +36,11 @@ uint16_t rpage__insert_record(record_page_entry_t* page_entry,
                               index_t key,
                               const char* remained_record);
 
-void rpage__show_record(record_page_entry_t* page_entry,
+void rpage__find_record(record_page_entry_t* page_entry,
                         uint16_t sid,
                         uint16_t record_size,
-                        key_t key_type);
+                        key_t key_type,
+                        action_t action);
 
 void rpage__show_page(record_page_entry_t* page_entry, uint16_t record_size, key_t key_type);
 

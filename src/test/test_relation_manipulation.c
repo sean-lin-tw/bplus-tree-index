@@ -22,9 +22,26 @@ int main(){
 
   for(int i=0; i<503; i++) {
     test_key.i = i;
-    rem_rec = randstring(25);
+    rem_rec = randstring((rand()%30+10));
     relation__insert(cur_relation, test_key, rem_rec);
   }
+
+  //-------------------- Delete two records from this relation --------------------
+  dpage__find_record(cur_relation->page_header,
+                     cur_relation->record_length,
+                     cur_relation->ktype, 125, 0, ACTION_DELETE);
+  dpage__find_record(cur_relation->page_header,
+                     cur_relation->record_length,
+                     cur_relation->ktype, 125, 1, ACTION_DELETE);
+  dpage__find_record(cur_relation->page_header,
+                     cur_relation->record_length,
+                     cur_relation->ktype, 130, 0, ACTION_DELETE);
+ //-------------------- Insert back two records into this relation --------------------
+  test_key.i = 503;
+  rem_rec = randstring(30);
+  relation__insert(cur_relation, test_key, rem_rec);
+  test_key.i = 504;
+  relation__insert(cur_relation, test_key, rem_rec);
 
   //-------------------- Display whole pages of this relation --------------------
   directory_page_t* cur_dirct = cur_relation->page_header;
@@ -41,21 +58,22 @@ int main(){
   }
 
   //-------------------- Display a single record of this relation with PID --------------------
-  dpage__show_record(cur_relation->page_header,
+
+  dpage__find_record(cur_relation->page_header,
                      cur_relation->record_length,
-                     cur_relation->ktype, 36, 2);
-  dpage__show_record(cur_relation->page_header,
+                     cur_relation->ktype, 36, 2, ACTION_PRINT);
+  dpage__find_record(cur_relation->page_header,
                      cur_relation->record_length,
-                     cur_relation->ktype, 24, 3);
-  dpage__show_record(cur_relation->page_header,
+                     cur_relation->ktype, 24, 3, ACTION_PRINT);
+  dpage__find_record(cur_relation->page_header,
                      cur_relation->record_length,
-                     cur_relation->ktype, 68, 1);
-  dpage__show_record(cur_relation->page_header,
+                     cur_relation->ktype, 68, 1, ACTION_PRINT);
+  dpage__find_record(cur_relation->page_header,
                      cur_relation->record_length,
-                     cur_relation->ktype, 68, 23);
-  dpage__show_record(cur_relation->page_header,
+                     cur_relation->ktype, 68, 23, ACTION_PRINT);
+  dpage__find_record(cur_relation->page_header,
                      cur_relation->record_length,
-                     cur_relation->ktype, 500, 3);
+                     cur_relation->ktype, 500, 3, ACTION_PRINT);
 
   //-------------------- Create another relation and display the information --------------------
   relation__create(&db, "Professor", TYPE_STRING, 25);
