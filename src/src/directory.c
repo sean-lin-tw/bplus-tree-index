@@ -7,7 +7,7 @@
 
 data_entry_t dpage__insert_record(directory_page_t* cur_dirct,
                                   uint16_t record_size,
-                                  key_t key_type,
+                                  bp_key_t key_type,
                                   index_t key,
                                   const char* remained_record)
 {
@@ -68,7 +68,7 @@ data_entry_t dpage__insert_record(directory_page_t* cur_dirct,
 
 void dpage__find_record(directory_page_t* cur_dirct,
                         uint16_t record_size,
-                        key_t key_type,
+                        bp_key_t key_type,
                         uint16_t pid,
                         uint16_t slot_number,
                         action_t action)
@@ -92,7 +92,7 @@ void dpage__find_record(directory_page_t* cur_dirct,
 // Insert when the page is NOT full, and return sid
 uint16_t rpage__insert_record(record_page_entry_t* page_entry,
                               uint16_t record_size,
-                              key_t key_type,
+                              bp_key_t key_type,
                               index_t key,
                               const char* remained_record)
 {
@@ -157,7 +157,7 @@ uint16_t rpage__insert_record(record_page_entry_t* page_entry,
 void rpage__find_record(record_page_entry_t* page_entry,
                         uint16_t sid,
                         uint16_t record_size,
-                        key_t key_type,
+                        bp_key_t key_type,
                         action_t action)
 {
   if(page_entry==NULL)
@@ -209,7 +209,7 @@ void rpage__find_record(record_page_entry_t* page_entry,
 }
 
 
-void rpage__show_page(record_page_entry_t* page_entry, uint16_t record_size, key_t key_type)
+void rpage__show_page(record_page_entry_t* page_entry, uint16_t record_size, bp_key_t key_type)
 {
   if(page_entry==NULL)
     return;

@@ -6,7 +6,7 @@
 
 relation_t* relation__create(relation_page_t* header,
                              const char* relation_name,
-                             key_t key_type,
+                             bp_key_t key_type,
                              int rec_len)
 {
   relation_t* new_relation = NULL;

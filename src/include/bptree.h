@@ -17,7 +17,7 @@ typedef union index_u index_t;
 typedef enum key_type_e {
   TYPE_INT,
   TYPE_STRING
-} key_t;
+} bp_key_t;
 
 
 union index_u {

@@ -11,7 +11,7 @@ typedef struct relation_page_s relation_page_t;
 
 relation_t* relation__create(relation_page_t* relation_page,
                              const char* relation_name,
-                             key_t key_type,
+                             bp_key_t key_type,
                              int rec_len);
 
 data_entry_t relation__insert(relation_t* relation,
@@ -24,7 +24,7 @@ void relation_display_info(relation_t* relation);
 
 
 struct relation_s {
-  key_t ktype;
+  bp_key_t ktype;
   int key_length;
   int record_length;
 

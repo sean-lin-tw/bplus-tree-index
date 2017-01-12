@@ -19,30 +19,30 @@ typedef enum action_type_e {
 
 data_entry_t dpage__insert_record(directory_page_t* cur_dirct,
                                   uint16_t record_size,
-                                  key_t key_type,
+                                  bp_key_t key_type,
                                   index_t key,
                                   const char* remained_record);
 
 void dpage__find_record(directory_page_t* cur_dirct,
                         uint16_t record_size,
-                        key_t key_type,
+                        bp_key_t key_type,
                         uint16_t pid,
                         uint16_t slot_number,
                         action_t action);
 
 uint16_t rpage__insert_record(record_page_entry_t* page_entry,
                               uint16_t record_size,
-                              key_t key_type,
+                              bp_key_t key_type,
                               index_t key,
                               const char* remained_record);
 
 void rpage__find_record(record_page_entry_t* page_entry,
                         uint16_t sid,
                         uint16_t record_size,
-                        key_t key_type,
+                        bp_key_t key_type,
                         action_t action);
 
-void rpage__show_page(record_page_entry_t* page_entry, uint16_t record_size, key_t key_type);
+void rpage__show_page(record_page_entry_t* page_entry, uint16_t record_size, bp_key_t key_type);
 
 
 
