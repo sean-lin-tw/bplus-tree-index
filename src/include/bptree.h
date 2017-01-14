@@ -53,6 +53,9 @@ tree_page_ptr_t bp__get(tree_page_ptr_t node, index_t key, int level, bp_key_t t
 
 void bp__find_record(tree_page_ptr_t root, index_t key, int level, bp_key_t type);
 
+int bp__scan(tree_page_ptr_t node, int level, bp_key_t ktype, int is_print);
+
+void print_entries(tree_page_ptr_t t_ptr, tree_page_t etype);
 
 
 struct data_entry_s {
