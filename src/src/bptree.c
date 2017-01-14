@@ -225,20 +225,28 @@ tree_page_ptr_t bp__get(tree_page_ptr_t node, index_t key, int level, bp_key_t t
 }
 
 
-void bp__find_record(tree_page_ptr_t root, index_t key, int level, bp_key_t type) {
+void _print_data_entry(data_entry_t dentry, bp_key_t type)
+{
+    if(type == TYPE_INT)
+        printf("key: %d\n", dentry.key.i);
+    else
+        printf("key: %s\n", dentry.key.str);
+
+    printf("------> pid: %d\n", dentry.pid);
+    printf("----> slot#: %d\n", dentry.slot_num);
+}
+
+
+data_entry_t bp__find_record(tree_page_ptr_t root, index_t key, int level, bp_key_t type)
+{
 
     tree_page_ptr_t found_leaf = bp__get(root, key, level, type);
 
     for(int i=0; i<PAGE_ENTRY_SIZE; i++) {
         if(key__cmp(found_leaf.leaf->dentry[i].key, key, type)==0) {
-            if(type == TYPE_INT)
-                printf("key: %d\n", key.i);
-            else
-                printf("key: %s\n", key.str);
+            _print_data_entry(found_leaf.leaf->dentry[i], type);
 
-            printf("------> pid: %d\n", found_leaf.leaf->dentry[i].pid);
-            printf("----> slot#: %d\n", found_leaf.leaf->dentry[i].slot_num);
-            return;
+            return found_leaf.leaf->dentry[i];
         }
     }
 
@@ -249,11 +257,39 @@ void bp__find_record(tree_page_ptr_t root, index_t key, int level, bp_key_t type
 
 }
 
-void bp__get_range(tree_page_ptr_t root, index_t key1, index_t key2)
-{
-    // Use bp__get twice to get the range
 
-    // return all the values between them
+void bp__range_search(tree_page_ptr_t root, index_t key1, index_t key2, int level, bp_key_t type)
+{
+    // Use bp__get to get the location of the first page
+    tree_page_ptr_t found_leaf = bp__get(root, key1, level, type);
+    data_entry_t found_record;
+
+    int entry_index = -1;
+    for(int i=0; i<PAGE_ENTRY_SIZE; i++) {
+        if(key__cmp(found_leaf.leaf->dentry[i].key, key1, type)==0) {
+            entry_index = i;
+            break;
+        }
+    }
+
+    // Iterate with the doubly-linked list
+    if(entry_index == -1)
+        return;
+    else {
+        while(found_leaf.leaf != NULL) {
+            for(entry_index; entry_index<found_leaf.leaf->occupy; entry_index++) {
+                found_record = found_leaf.leaf->dentry[entry_index];
+                if(key__cmp(found_record.key, key1, type)>=0 &&
+                        key__cmp(found_record.key, key2, type)<=0) {
+                    _print_data_entry(found_record, type);
+                } else {
+                    return;
+                }
+            }
+            found_leaf.leaf = found_leaf.leaf->next;
+            entry_index = 0;
+        }
+    }
 }
 
 
