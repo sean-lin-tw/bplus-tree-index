@@ -276,54 +276,42 @@ int bp__scan(tree_page_ptr_t node, int level, bp_key_t ktype, int is_print)
 
     // If the node is "branch"
     if(level > 0) {
-      if(is_print)
-        print_entries(node, TYPE_BRANCH);
+        if(is_print)
+            print_entries(node, TYPE_BRANCH);
 
-      count += bp__scan(node.branch->first_ptr, level-1, ktype, is_print);
-      for(int i=0; i<PAGE_ENTRY_SIZE; i++) {
-        if(node.branch->tentry[i].page_ptr.branch!=NULL)
-          count += bp__scan(node.branch->tentry[i].page_ptr, level-1, ktype, is_print);
-      }
+        count += bp__scan(node.branch->first_ptr, level-1, ktype, is_print);
+        for(int i=0; i<PAGE_ENTRY_SIZE; i++) {
+            if(node.branch->tentry[i].page_ptr.branch!=NULL)
+                count += bp__scan(node.branch->tentry[i].page_ptr, level-1, ktype, is_print);
+        }
 
-      return count+1;
+        return count+1;
 
-    // If the node is "leaf"
+        // If the node is "leaf"
     } else {
-      if(is_print)
-        print_entries(node, TYPE_LEAF);
-      return 1;
+        if(is_print)
+            print_entries(node, TYPE_LEAF);
+        return 1;
     }
 }
 
 
 void print_entries(tree_page_ptr_t t_ptr, tree_page_t etype) {
 
-  if(t_ptr.branch == NULL)
-    return;
+    if(t_ptr.branch == NULL)
+        return;
 
-  printf("\n=============");
-  if(etype==TYPE_LEAF){
-    printf("\n* Leaf Page *");
-  } else {
-    printf("\n*Branch Page*");
-  }
-  printf("\n=============");
+    printf("\n=============");
+    if(etype==TYPE_LEAF) {
+        printf("\n* Leaf Page *");
+    } else {
+        printf("\n*Branch Page*");
+    }
+    printf("\n=============");
 
-  printf("\nIndex |");
-  for(int j=0; j<PAGE_ENTRY_SIZE; j++) {
-      printf("%4d|", j);
-  }
-  printf("\n");
-  printf("------|");
-  for(int j=0; j<PAGE_ENTRY_SIZE; j++) {
-      printf("----|");
-  }
-  printf("\n");
-  printf("Key   |");
-
-  if(etype == TYPE_LEAF) {
+    printf("\nIndex |");
     for(int j=0; j<PAGE_ENTRY_SIZE; j++) {
-        printf("%4d|", t_ptr.leaf->dentry[j].key.i);
+        printf("%4d|", j);
     }
     printf("\n");
     printf("------|");
@@ -331,25 +319,37 @@ void print_entries(tree_page_ptr_t t_ptr, tree_page_t etype) {
         printf("----|");
     }
     printf("\n");
-    printf("Pid   |");
-    for(int j=0; j<PAGE_ENTRY_SIZE; j++) {
-        printf("%4d|", t_ptr.leaf->dentry[j].pid);
-    }
-    printf("\n");
-    printf("------|");
-    for(int j=0; j<PAGE_ENTRY_SIZE; j++) {
-        printf("----|");
-    }
-    printf("\n");
-    printf("Slot# |");
-    for(int j=0; j<PAGE_ENTRY_SIZE; j++) {
-        printf("%4d|", t_ptr.leaf->dentry[j].slot_num);
-    }
-  } else {
-    for(int j=0; j<PAGE_ENTRY_SIZE; j++) {
-        printf("%4d|", t_ptr.branch->tentry[j].key.i);
-    }
-  }
+    printf("Key   |");
 
-  printf("\n");
+    if(etype == TYPE_LEAF) {
+        for(int j=0; j<PAGE_ENTRY_SIZE; j++) {
+            printf("%4d|", t_ptr.leaf->dentry[j].key.i);
+        }
+        printf("\n");
+        printf("------|");
+        for(int j=0; j<PAGE_ENTRY_SIZE; j++) {
+            printf("----|");
+        }
+        printf("\n");
+        printf("Pid   |");
+        for(int j=0; j<PAGE_ENTRY_SIZE; j++) {
+            printf("%4d|", t_ptr.leaf->dentry[j].pid);
+        }
+        printf("\n");
+        printf("------|");
+        for(int j=0; j<PAGE_ENTRY_SIZE; j++) {
+            printf("----|");
+        }
+        printf("\n");
+        printf("Slot# |");
+        for(int j=0; j<PAGE_ENTRY_SIZE; j++) {
+            printf("%4d|", t_ptr.leaf->dentry[j].slot_num);
+        }
+    } else {
+        for(int j=0; j<PAGE_ENTRY_SIZE; j++) {
+            printf("%4d|", t_ptr.branch->tentry[j].key.i);
+        }
+    }
+
+    printf("\n");
 }
