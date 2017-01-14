@@ -15,54 +15,76 @@ typedef union index_u index_t;
 
 
 typedef enum key_type_e {
-  TYPE_INT,
-  TYPE_STRING
+    TYPE_INT,
+    TYPE_STRING
 } bp_key_t;
 
+typedef enum tree_page_type_e {
+    TYPE_BRANCH,
+    TYPE_LEAF
+} tree_page_t;
 
 union index_u {
-  int i;
-  char str[STRING_KEY_SIZE];
+    int i;
+    char str[STRING_KEY_SIZE];
 } __attribute__((packed));;
 
 
 union tree_page_ptr_u {
-  leaf_page_t* leaf;
-  branch_page_t* branch;
+    leaf_page_t* leaf;
+    branch_page_t* branch;
 };
 
 
-struct data_entry_s {
-  uint16_t pid;
-  uint16_t slot_num;
+int key__cmp (index_t key1, index_t key2, bp_key_t type);
+tree_page_ptr_t bp__new_page(tree_page_t type);
 
-  index_t key;
+void bp__sort(void* base, size_t nitems, size_t size, tree_page_t bpage_type, bp_key_t key_type);
+
+void bp__insert(tree_page_ptr_t* root,
+                tree_page_ptr_t node,
+                data_entry_t* entry,
+                tree_entry_t** new_child,
+                int level,
+                int* total_level,
+                bp_key_t type);
+
+tree_page_ptr_t bp__get(tree_page_ptr_t node, index_t key, int level, bp_key_t type);
+
+
+
+
+struct data_entry_s {
+    uint16_t pid;
+    uint16_t slot_num;
+
+    index_t key;
 } __attribute__((packed));;
 
 
 struct tree_entry_s {
-  tree_page_ptr_t page_ptr;
-  index_t key;
+    tree_page_ptr_t page_ptr;
+    index_t key;
 } __attribute__((packed));;
 
 
 struct branch_page_s {
-  uint8_t occupy;
+    uint8_t occupy;
 
-  branch_page_t* uplevel;
-  tree_entry_t tentry[PAGE_ENTRY_SIZE];
-  tree_page_ptr_t last_ptr;
+    branch_page_t* uplevel;
+    tree_entry_t tentry[PAGE_ENTRY_SIZE];
+    tree_page_ptr_t first_ptr;
 } __attribute__((aligned(512)));;
 
 
 struct leaf_page_s {
-  uint8_t occupy;
+    uint8_t occupy;
 
-  branch_page_t* uplevel;
-  leaf_page_t* prev;
-  leaf_page_t* next;
+//  branch_page_t* uplevel;
+    leaf_page_t* prev;
+    leaf_page_t* next;
 
-  data_entry_t dentry[PAGE_ENTRY_SIZE];
+    data_entry_t dentry[PAGE_ENTRY_SIZE];
 } __attribute__((aligned(512)));;
 
 #endif

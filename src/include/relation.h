@@ -3,7 +3,7 @@
 
 #include "directory.h"
 
-#define RELATION_NAME_SIZE 107
+#define RELATION_NAME_SIZE 103
 #define RELATION_PAGE_SIZE 4
 
 typedef struct relation_s relation_t;
@@ -24,21 +24,22 @@ void relation_display_info(relation_t* relation);
 
 
 struct relation_s {
-  bp_key_t ktype;
-  int key_length;
-  int record_length;
+    bp_key_t ktype;
+    int key_length;
+    int record_length;
 
-  tree_page_ptr_t root;
-  directory_page_t* page_header;
+    tree_page_ptr_t root;
+    int level;
+    directory_page_t* page_header;
 
-  char name[RELATION_NAME_SIZE];
+    char name[RELATION_NAME_SIZE];
 
 } __attribute__((packed));;
 
 
 struct relation_page_s {
-  relation_page_t* next;
-  relation_t relations[RELATION_PAGE_SIZE];
+    relation_page_t* next;
+    relation_t relations[RELATION_PAGE_SIZE];
 };
 // __attribute__((aligned(512)));;
 

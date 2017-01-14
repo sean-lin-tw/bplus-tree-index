@@ -3,7 +3,8 @@
 
 #include "include/relation.h"
 
-int main(){
+int main()
+{
 
     printf("Hello, world!");
 

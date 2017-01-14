@@ -13,8 +13,8 @@ typedef struct record_page_s record_page_t;
 typedef struct slot_entry_s slot_entry_t;
 
 typedef enum action_type_e {
-  ACTION_PRINT,
-  ACTION_DELETE
+    ACTION_PRINT,
+    ACTION_DELETE
 } action_t;
 
 data_entry_t dpage__insert_record(directory_page_t* cur_dirct,
@@ -50,34 +50,34 @@ uint16_t rpage__scan_full(record_page_entry_t* page_entry, slot_entry_t* target)
 
 
 struct slot_entry_s {
-  uint16_t offset;
-  uint16_t reclen;
+    uint16_t offset;
+    uint16_t reclen;
 };
 
 
 struct record_page_s {
-  uint16_t slot_num;
-  uint16_t free_ptr;
-  uint16_t dirct_end_ptr;
-  uint8_t buffer[RECORD_PAGE_BUFFER_SIZE];
+    uint16_t slot_num;
+    uint16_t free_ptr;
+    uint16_t dirct_end_ptr;
+    uint8_t buffer[RECORD_PAGE_BUFFER_SIZE];
 };
 
 
 struct record_page_entry_s {
-  uint16_t is_full;
-  uint16_t pid;
+    uint16_t is_full;
+    uint16_t pid;
 
-  record_page_t* rpage;
+    record_page_t* rpage;
 };
 
 
 struct directory_page_s {
-  uint8_t is_full;
-  uint8_t fullpage_num;
-  uint16_t pid_base;
+    uint8_t is_full;
+    uint8_t fullpage_num;
+    uint16_t pid_base;
 
-  directory_page_t* next;
-  record_page_entry_t entry[DIRECTORY_ENTRY_NUM];
+    directory_page_t* next;
+    record_page_entry_t entry[DIRECTORY_ENTRY_NUM];
 };
 
 #endif
