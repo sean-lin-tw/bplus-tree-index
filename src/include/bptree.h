@@ -37,6 +37,7 @@ union tree_page_ptr_u {
 
 
 int key__cmp (index_t key1, index_t key2, bp_key_t type);
+
 tree_page_ptr_t bp__new_page(tree_page_t type);
 
 void bp__sort(void* base, size_t nitems, size_t size, tree_page_t bpage_type, bp_key_t key_type);

@@ -293,18 +293,6 @@ void bp__range_search(tree_page_ptr_t root, index_t key1, index_t key2, int leve
 }
 
 
-void bp__delete(tree_page_ptr_t node, index_t key)
-{
-    // Find the leaf page and the slot(s) for delete
-
-    // Determine whether a re-distribution is needed
-
-    // If a re-distribution is not possible, pull down and merge
-
-    // Repeat the process recursively
-}
-
-
 int bp__scan(tree_page_ptr_t node, int level, bp_key_t ktype, int is_print)
 {
     // Do a DFS to print all the records
@@ -388,4 +376,16 @@ void print_entries(tree_page_ptr_t t_ptr, tree_page_t etype) {
     }
 
     printf("\n");
+}
+
+
+void bp__delete(tree_page_ptr_t node, index_t key)
+{
+    // Find the leaf page and the slot(s) for delete
+
+    // Determine whether a re-distribution is needed
+
+    // If a re-distribution is not possible, pull down and merge
+
+    // Repeat the process recursively
 }
