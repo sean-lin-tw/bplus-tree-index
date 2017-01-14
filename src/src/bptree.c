@@ -195,6 +195,60 @@ void bp__insert(tree_page_ptr_t* root,
     }
 }
 
+
+tree_page_ptr_t bp__get(tree_page_ptr_t node, index_t key, int level, bp_key_t type)
+{
+    // Search the tree top down to find a entry of a leaf page that links to a record
+    if (level == 0)
+        return node;
+    else {
+        // less than the first one
+        /* Find the child */
+        if (key__cmp(node.branch->tentry[0].key, key, type) > 0) {
+            return bp__get(node.branch->first_ptr, key, level-1, type);
+        } else if (node.branch->tentry[PAGE_ENTRY_SIZE-1].page_ptr.leaf!=NULL &&
+                   key__cmp(node.branch->tentry[PAGE_ENTRY_SIZE-1].key, key, type) <= 0) {
+            return bp__get(node.branch->tentry[PAGE_ENTRY_SIZE-1].page_ptr, key, level-1, type);
+        } else {
+            for (int i=0; i<PAGE_ENTRY_SIZE-1; i++) {
+                if (key__cmp(node.branch->tentry[i].key, key, type) <= 0 &&
+                        (key__cmp(node.branch->tentry[i+1].key, key, type)) > 0 ||
+                        node.branch->tentry[i+1].page_ptr.leaf==NULL) {
+                    return bp__get(node.branch->tentry[i].page_ptr, key, level-1, type);
+                }
+            }
+
+            return node;
+        }
+    }
+}
+
+
+void bp__find_record(tree_page_ptr_t root, index_t key, int level, bp_key_t type) {
+
+    tree_page_ptr_t found_leaf = bp__get(root, key, level, type);
+
+    for(int i=0; i<PAGE_ENTRY_SIZE; i++) {
+        if(key__cmp(found_leaf.leaf->dentry[i].key, key, type)==0) {
+            if(type == TYPE_INT)
+                printf("key: %d\n", key.i);
+            else
+                printf("key: %s\n", key.str);
+
+            printf("------> pid: %d\n", found_leaf.leaf->dentry[i].pid);
+            printf("----> slot#: %d\n", found_leaf.leaf->dentry[i].slot_num);
+        }
+    }
+}
+
+void bp__get_range(tree_page_ptr_t root, index_t key1, index_t key2)
+{
+    // Use bp__get twice to get the range
+
+    // return all the values between them
+}// Do a DFS to print all the records
+
+
 void bp__delete(tree_page_ptr_t node, index_t key)
 {
     // Find the leaf page and the slot(s) for delete
@@ -211,33 +265,3 @@ void bp__scan(tree_page_ptr_t root)
     // Do a BFS to print all the records
 
 }
-
-tree_page_ptr_t bp__get(tree_page_ptr_t node, index_t key, int level, bp_key_t type)
-{
-    // Search the tree top down to find a entry of a leaf page that links to a record
-    if (level == 0)
-        return node;
-    else {
-        // less than the first one
-        if (key__cmp(key, node.branch->tentry[0].key, type) < 0)
-            return bp__get(node.branch->first_ptr, key, level-1, type);
-        else {
-            // greater than the last one
-            if (key__cmp(key, node.branch->tentry[PAGE_ENTRY_SIZE-1].key, type) >= 0)
-                return bp__get(node.branch->tentry[PAGE_ENTRY_SIZE-1].page_ptr, key, level-1, type);
-            else {
-                for (int i=0; i<PAGE_ENTRY_SIZE; i++) {
-                    if (key__cmp(key, node.branch->tentry[i].key, type) >= 0)
-                        return bp__get(node.branch->tentry[i].page_ptr, key, level-1, type);
-                }
-            }
-        }
-    }
-}
-
-void bp__get_range(tree_page_ptr_t root, index_t key1, index_t key2)
-{
-    // Use bp__get twice to get the range
-
-    // return all the values between them
-}// Do a DFS to print all the records

@@ -16,6 +16,8 @@ int main(void)
     // Insert a lot of data-entry
     for(int j=0; j<1000; j++) {
         inserted_entry.key.i = j;
+        inserted_entry.pid = j;
+        inserted_entry.slot_num = j;
         // printf("Insert: %d\n", inserted_entry.key.i);
         bp__insert(&root, root, &inserted_entry, &tmp_new_child, level, &level, TYPE_INT);
     }
@@ -45,6 +47,16 @@ int main(void)
     for(int j=0; j<36; j++) {
         printf("%3d ", root.branch->first_ptr.branch->tentry[0].page_ptr.leaf->dentry[j].key.i);
     }
+
+    printf("\n\n\n");
+
+    inserted_entry.key.i = 439;
+    bp__find_record(root, inserted_entry.key, level, TYPE_INT);
+    inserted_entry.key.i = 258;
+    bp__find_record(root, inserted_entry.key, level, TYPE_INT);
+    inserted_entry.key.i = 694;
+    bp__find_record(root, inserted_entry.key, level, TYPE_INT);
+
     // for(int j=0; j<35; j++) {
     //   if(root.branch->tentry[j].page_ptr.leaf!=NULL){
     //     printf("\n\nleaf page-%d:\n", j+1);

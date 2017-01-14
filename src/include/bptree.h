@@ -51,6 +51,7 @@ void bp__insert(tree_page_ptr_t* root,
 
 tree_page_ptr_t bp__get(tree_page_ptr_t node, index_t key, int level, bp_key_t type);
 
+void bp__find_record(tree_page_ptr_t root, index_t key, int level, bp_key_t type);
 
 
 
