@@ -14,6 +14,8 @@ relation_t* relation__create(relation_page_t* relation_page,
                              bp_key_t key_type,
                              int rec_len);
 
+relation_t* get_relation(relation_page_t* header, const char* relation_name);
+
 void relation_display_info(relation_t* relation);
 
 

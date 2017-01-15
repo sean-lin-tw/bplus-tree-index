@@ -19,8 +19,9 @@ int main()
     printf("*********************\n");
 
     relation__create(&db, "Student", TYPE_INT, 100);
-    relation_display_info(&db.relations[0]);
+    relation_t* cur_relation = get_relation(&db, "Student");
 
+    relation_display_info(cur_relation);
 
     //-------------------- Insert a lot of random records into this relation --------------------
     printf("\n***************************\n");
@@ -29,7 +30,6 @@ int main()
 
     index_t test_key;
     char* rem_rec = (char*) calloc(20, sizeof(char));
-    relation_t* cur_relation = &db.relations[0];
 
     for(int i=0; i<503; i++) {
         test_key.i = i;
@@ -96,8 +96,8 @@ int main()
     printf("*******************\n");
 
     index_t test_key2;
-    test_key.i = 100;
-    test_key2.i = 120;
+    test_key.i = 342;
+    test_key2.i = 378;
     relation__find_range(cur_relation, test_key, test_key2);
 
     //-------------------- Display the file and index statistic of this relation --------------------
