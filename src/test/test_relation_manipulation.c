@@ -108,11 +108,11 @@ int main()
     relation__statistic(cur_relation);
 
 
-    // //==================== Create another relation and display the information ====================
-    // relation__create(&db, "Professor", TYPE_STRING, 25);
-    // cur_relation = &db.relations[1];
-    // relation_display_info(cur_relation);
-    //
+    //==================== Create another relation and display the information ====================
+    relation__create(&db, "Professor", TYPE_STRING, 25);
+    cur_relation = get_relation(&db, "Professor");
+    relation_display_info(cur_relation);
+    
     // //-------------------- Display the information of a non-exist relation--------------------
     // relation_display_info(&db.relations[2]);
     // printf("\nTotal slotted data page: %d\n\n", dpage__statistics(cur_relation->page_header));
