@@ -59,7 +59,7 @@ int main(void)
 
     // Insert a lot of data-entry
     for(int j=0; j<100; j++) {
-        memset(str_inserted_entry.key.str, j+64, 4);
+        memset(str_inserted_entry.key.str, j+64, 10);
 
         str_inserted_entry.pid = j;
         str_inserted_entry.slot_num = j;
@@ -73,20 +73,20 @@ int main(void)
     // Test bp__range_search
     printf("\n\n\n");
     index_t str_key2;
-    memset(str_inserted_entry.key.str, 83, 4);
+    memset(str_inserted_entry.key.str, 83, 10);
     memset(str_key2.str, 99, 4);
     bp__range_search(str_root, str_inserted_entry.key, str_key2, str_level, TYPE_STRING);
 
     printf("\n\n\n");
 
     // Test bp__find_record
-    memset(str_inserted_entry.key.str, 85, 4);
+    memset(str_inserted_entry.key.str, 85, 10);
     bp__find_record(str_root, str_inserted_entry.key, str_level, TYPE_STRING);
-    memset(str_inserted_entry.key.str, 97, 4);
+    memset(str_inserted_entry.key.str, 97, 10);
     bp__find_record(str_root, str_inserted_entry.key, str_level, TYPE_STRING);
-    memset(str_inserted_entry.key.str, 120, 4);
+    memset(str_inserted_entry.key.str, 120, 10);
     bp__find_record(str_root, str_inserted_entry.key, str_level, TYPE_STRING);
-    memset(str_inserted_entry.key.str, 909, 4);
+    memset(str_inserted_entry.key.str, 909, 10);
     bp__find_record(str_root, str_inserted_entry.key, str_level, TYPE_STRING);
 
 
