@@ -30,6 +30,8 @@ void dpage__find_record(directory_page_t* cur_dirct,
                         uint16_t slot_number,
                         action_t action);
 
+int dpage__statistics(directory_page_t* cur_dirct);
+
 uint16_t rpage__insert_record(record_page_entry_t* page_entry,
                               uint16_t record_size,
                               bp_key_t key_type,

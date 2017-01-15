@@ -37,29 +37,6 @@ relation_t* relation__create(relation_page_t* header,
 }
 
 
-data_entry_t relation__insert(relation_t* relation,
-                              index_t key,
-                              const char* remained_record)
-{
-    // Insert the record to pages and get RID
-    return dpage__insert_record(relation->page_header,
-                                relation->record_length,
-                                relation->ktype,
-                                key,
-                                remained_record);
-    // Then insert the RID and key to B+Tree
-}
-
-
-void relation__find(relation_t* relation, index_t key)
-{
-    if(relation->page_header == NULL) {
-        fprintf(stderr, "This relation is empty!\n");
-        return;
-    }
-
-}
-
 
 void relation_display_info(relation_t* relation)
 {
@@ -79,4 +56,42 @@ void relation_display_info(relation_t* relation)
     printf("----> Directory Address: %p, size: %lu\n\n",
            relation->page_header,
            sizeof(*(relation->page_header)));
+}
+
+
+
+data_entry_t relation__insert(relation_t* relation,
+                              index_t key,
+                              const char* remained_record)
+{
+    tree_entry_t* tmp_new_child = NULL;
+    // Insert the record to pages and get RID
+    data_entry_t inserted_entry =  dpage__insert_record(relation->page_header,
+                                   relation->record_length,
+                                   relation->ktype,
+                                   key,
+                                   remained_record);
+    // Then insert the RID and key to B+Tree
+    bp__insert(&(relation->root), relation->root, &inserted_entry,
+               &tmp_new_child, relation->level, &(relation->level), relation->ktype);
+}
+
+
+void relation__find(relation_t* relation, index_t key)
+{
+    if(relation->page_header == NULL) {
+        fprintf(stderr, "This relation is empty!\n");
+        return;
+    }
+
+    // Fetch the pid and slot# from B+tree
+    data_entry_t found_record = bp__find_record(relation->root, key, relation->level, relation->ktype);
+
+    // Fetch the remained_record from data page
+    dpage__find_record(relation->page_header,
+                       relation->key_length,
+                       relation->ktype,
+                       found_record.pid,
+                       found_record.slot_num,
+                       ACTION_PRINT);
 }

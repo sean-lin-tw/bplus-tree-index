@@ -71,17 +71,21 @@ int main()
                        cur_relation->ktype, 68, 1, ACTION_PRINT);
     dpage__find_record(cur_relation->page_header,
                        cur_relation->record_length,
-                       cur_relation->ktype, 68, 23, ACTION_PRINT);
+                       cur_relation->ktype, 73, 23, ACTION_PRINT);
     dpage__find_record(cur_relation->page_header,
                        cur_relation->record_length,
                        cur_relation->ktype, 500, 3, ACTION_PRINT);
 
+    printf("\n\n\nTotal slotted data page: %d\n\n", dpage__statistics(cur_relation->page_header));
+
     //-------------------- Create another relation and display the information --------------------
     relation__create(&db, "Professor", TYPE_STRING, 25);
-    relation_display_info(&db.relations[1]);
+    cur_relation = &db.relations[1];
+    relation_display_info(cur_relation);
 
     //-------------------- Display the information of a non-exist relation--------------------
     relation_display_info(&db.relations[2]);
+    printf("\n\n\nTotal slotted data page: %d\n\n", dpage__statistics(cur_relation->page_header));
 
 }
 

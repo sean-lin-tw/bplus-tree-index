@@ -84,10 +84,26 @@ void dpage__find_record(directory_page_t* cur_dirct,
         return;
     } else {
         if(action == ACTION_PRINT) printf("Pid: %d\n", pid);
-        rpage__find_record(&cur_dirct->entry[dirct_entry_id], slot_number, record_size, key_type, action);
+        if(cur_dirct->entry[dirct_entry_id].rpage!=NULL)
+            rpage__find_record(&cur_dirct->entry[dirct_entry_id], slot_number, record_size, key_type, action);
+        else
+            fprintf(stderr, "Warning: Cannot find the record with <pid, slot#>: <%d, %d>\n", pid, slot_number);
     }
 }
 
+int dpage__statistics(directory_page_t* cur_dirct)
+{
+    int count = 0;
+    while(cur_dirct!=NULL) {
+        for(int i=0; i<DIRECTORY_ENTRY_NUM; i++) {
+            count += (cur_dirct->entry[i].rpage != NULL ? 1 : 0);
+        }
+
+        cur_dirct = cur_dirct->next;
+    }
+
+    return count;
+}
 
 // Insert when the page is NOT full, and return sid
 uint16_t rpage__insert_record(record_page_entry_t* page_entry,

@@ -16,7 +16,7 @@ int main(void)
     tree_entry_t* tmp_new_child = NULL;
 
     // Insert a lot of data-entry
-    for(int j=0; j<100; j++) {
+    for(int j=0; j<1000; j++) {
         inserted_entry.key.i = j;
         inserted_entry.pid = j;
         inserted_entry.slot_num = j;
@@ -25,12 +25,13 @@ int main(void)
 
     // Test bp__scan
     printf("\n\nTotal index pages: %d\n", bp__scan(root, level, TYPE_INT, 1));
+    printf("Total leaf pages: %d\n", bp__scan_leaf(root, level));
 
     // Test bp__range_search
     printf("\n\n\n");
     index_t key2;
     inserted_entry.key.i = 25;
-    key2.i = 96;
+    key2.i = 35;
     bp__range_search(root, inserted_entry.key, key2, level, TYPE_INT);
 
     // Test bp__find_record
@@ -69,6 +70,7 @@ int main(void)
 
     // Test bp__scan
     printf("\n\nTotal index pages: %d\n", bp__scan(str_root, str_level, TYPE_STRING, 1));
+    printf("Total leaf pages: %d\n", bp__scan_leaf(str_root, str_level));
 
     // Test bp__range_search
     printf("\n\n\n");
@@ -84,9 +86,9 @@ int main(void)
     bp__find_record(str_root, str_inserted_entry.key, str_level, TYPE_STRING);
     memset(str_inserted_entry.key.str, 97, 10);
     bp__find_record(str_root, str_inserted_entry.key, str_level, TYPE_STRING);
-    memset(str_inserted_entry.key.str, 120, 10);
+    memset(str_inserted_entry.key.str, 150, 10);
     bp__find_record(str_root, str_inserted_entry.key, str_level, TYPE_STRING);
-    memset(str_inserted_entry.key.str, 909, 10);
+    memset(str_inserted_entry.key.str, 209, 10);
     bp__find_record(str_root, str_inserted_entry.key, str_level, TYPE_STRING);
 
 

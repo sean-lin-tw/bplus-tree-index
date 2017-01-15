@@ -14,13 +14,15 @@ relation_t* relation__create(relation_page_t* relation_page,
                              bp_key_t key_type,
                              int rec_len);
 
+void relation_display_info(relation_t* relation);
+
+
 data_entry_t relation__insert(relation_t* relation,
                               index_t key,
                               const char* remained_record);
 
 void relation__find(relation_t* relation, index_t key);
 
-void relation_display_info(relation_t* relation);
 
 
 struct relation_s {

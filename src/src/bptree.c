@@ -320,6 +320,25 @@ int bp__scan(tree_page_ptr_t node, int level, bp_key_t ktype, int is_print)
 }
 
 
+int bp__scan_leaf(tree_page_ptr_t node, int level)
+{
+    // Do a DFS to find all the leaf pages
+    int count = 0;
+
+    // If the node is "branch"
+    if(level > 0) {
+        count += bp__scan_leaf(node.branch->first_ptr, level-1);
+        for(int i=0; i<node.branch->occupy; i++) {
+            if(node.branch->tentry[i].page_ptr.branch!=NULL)
+                count += bp__scan_leaf(node.branch->tentry[i].page_ptr, level-1);
+        }
+        return count;
+        // If the node is "leaf"
+    } else {
+        return 1;
+    }
+}
+
 void print_entries(tree_page_ptr_t t_ptr, tree_page_t etype, bp_key_t ktype) {
 
     if(t_ptr.branch == NULL)
