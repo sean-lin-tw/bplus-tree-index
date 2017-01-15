@@ -36,7 +36,7 @@ int main()
     cout << "      p to Display specific data page " << endl;
     cout << "      quit or exit to leave the program\n\n" << endl;
 
-    string command, token_comma, token_else;
+    string command, token_comma, token_else, str_buffer;
     vector<string> buffer_comma, buffer_else;
     stringstream ss_comma, ss_else;
 
@@ -85,7 +85,15 @@ int main()
             /* !!!!!!Remember to do error handling!!!!!! */
             for (int i=1; i<buffer_else.size(); i+=2) {
                 key_coppier(cur_relation, &insert_key, buffer_else.at(i));
-                relation__insert(cur_relation, insert_key, buffer_else.at(i+1).c_str());
+                if(cur_relation->ktype == TYPE_INT) {
+                    relation__insert(cur_relation, insert_key, buffer_else.at(i+1).c_str());
+                } else {
+                    str_buffer = string("") + trim(buffer_else.at(i)) + string("]") + trim(buffer_else.at(i+1));
+                    str_buffer.erase(0, 10);
+                    str_buffer = string("[..") + str_buffer;
+                    relation__insert(cur_relation, insert_key, str_buffer.c_str());
+                }
+
             }
 
         }
@@ -163,6 +171,8 @@ inline string trim(string& str)
 {
     str.erase(0, str.find_first_not_of(' '));       //prefixing spaces
     str.erase(str.find_last_not_of(' ')+1);         //surfixing spaces
+    str.erase(0, str.find_first_not_of('"'));       //prefixing spaces
+    str.erase(str.find_last_not_of('"')+1);         //surfixing spaces
     return str;
 }
 
@@ -185,5 +195,5 @@ void key_coppier(relation_t* cur_relation, index_t* key, string target) {
     if(cur_relation->ktype == TYPE_INT)
         (*key).i = stoi(target);
     else
-        strncpy((*key).str, target.c_str(), 10);
+        strncpy((*key).str, trim(target).c_str(), 10);
 }
