@@ -12,11 +12,21 @@ int main()
     //-------------------- Initial a database --------------------
     relation_page_t db = {0};
 
+
     //-------------------- Create a relation and display the information --------------------
+    printf("\n*********************\n");
+    printf("| Create a relation |\n");
+    printf("*********************\n");
+
     relation__create(&db, "Student", TYPE_INT, 100);
     relation_display_info(&db.relations[0]);
 
+
     //-------------------- Insert a lot of random records into this relation --------------------
+    printf("\n***************************\n");
+    printf("| Insert a lot of records |\n");
+    printf("***************************\n");
+
     index_t test_key;
     char* rem_rec = (char*) calloc(20, sizeof(char));
     relation_t* cur_relation = &db.relations[0];
@@ -28,6 +38,10 @@ int main()
     }
 
     //-------------------- Delete two records from this relation --------------------
+    printf("\n************************\n");
+    printf("| Delete a few records |\n");
+    printf("************************\n");
+
     dpage__find_record(cur_relation->page_header,
                        cur_relation->record_length,
                        cur_relation->ktype, 125, 0, ACTION_DELETE);
@@ -37,55 +51,71 @@ int main()
     dpage__find_record(cur_relation->page_header,
                        cur_relation->record_length,
                        cur_relation->ktype, 130, 0, ACTION_DELETE);
-//-------------------- Insert back two records into this relation --------------------
+
+    //-------------------- Insert back two records into this relation --------------------
     test_key.i = 503;
     rem_rec = randstring(30);
     relation__insert(cur_relation, test_key, rem_rec);
     test_key.i = 504;
     relation__insert(cur_relation, test_key, rem_rec);
 
-    //-------------------- Display whole pages of this relation --------------------
-    directory_page_t* cur_dirct = cur_relation->page_header;
-    for(int i=0; i<500; i++) {
-        if(cur_dirct!=NULL && cur_dirct->entry[i%DIRECTORY_ENTRY_NUM].rpage!=NULL) {
-            rpage__show_page(&cur_dirct->entry[i%DIRECTORY_ENTRY_NUM],
-                             cur_relation->record_length,
-                             cur_relation->ktype);
-            if((i%DIRECTORY_ENTRY_NUM == (DIRECTORY_ENTRY_NUM-1)))
-                cur_dirct = cur_dirct->next;
-        } else {
-            break;
-        }
-    }
 
-    //-------------------- Display a single record of this relation with PID --------------------
+    // //-------------------- Display some pages of this relation --------------------
+    printf("\n**********************\n");
+    printf("| Display some pages |\n");
+    printf("**********************\n");
 
-    dpage__find_record(cur_relation->page_header,
-                       cur_relation->record_length,
-                       cur_relation->ktype, 36, 2, ACTION_PRINT);
-    dpage__find_record(cur_relation->page_header,
-                       cur_relation->record_length,
-                       cur_relation->ktype, 24, 3, ACTION_PRINT);
-    dpage__find_record(cur_relation->page_header,
-                       cur_relation->record_length,
-                       cur_relation->ktype, 68, 1, ACTION_PRINT);
-    dpage__find_record(cur_relation->page_header,
-                       cur_relation->record_length,
-                       cur_relation->ktype, 73, 23, ACTION_PRINT);
-    dpage__find_record(cur_relation->page_header,
-                       cur_relation->record_length,
-                       cur_relation->ktype, 500, 3, ACTION_PRINT);
+    relation__page_display(cur_relation, 15);
+    relation__page_display(cur_relation, 23);
+    relation__page_display(cur_relation, 59);
 
-    printf("\n\n\nTotal slotted data page: %d\n\n", dpage__statistics(cur_relation->page_header));
+    //-------------------- Display the index information of this relation --------------------
+    printf("\n*********************************\n");
+    printf("| Display the index information |\n");
+    printf("*********************************\n");
 
-    //-------------------- Create another relation and display the information --------------------
-    relation__create(&db, "Professor", TYPE_STRING, 25);
-    cur_relation = &db.relations[1];
-    relation_display_info(cur_relation);
+    relation__index_scan(cur_relation);
 
-    //-------------------- Display the information of a non-exist relation--------------------
-    relation_display_info(&db.relations[2]);
-    printf("\n\n\nTotal slotted data page: %d\n\n", dpage__statistics(cur_relation->page_header));
+    //-------------------- Display a single record of this relation with key --------------------
+    printf("\n*******************************\n");
+    printf("| Display some single records |\n");
+    printf("*******************************\n");
+
+    test_key.i = 319;
+    relation__find(cur_relation, test_key);
+
+    test_key.i = 258;
+    relation__find(cur_relation, test_key);
+
+    test_key.i = 900;
+    relation__find(cur_relation, test_key);
+
+    //-------------------- Display a lot of records of this relation with key --------------------
+    printf("\n*******************\n");
+    printf("| Do range search |\n");
+    printf("*******************\n");
+
+    index_t test_key2;
+    test_key.i = 100;
+    test_key2.i = 120;
+    relation__find_range(cur_relation, test_key, test_key2);
+
+    //-------------------- Display the file and index statistic of this relation --------------------
+    printf("\n*************************\n");
+    printf("| Display the statistic |\n");
+    printf("*************************\n");
+
+    relation__statistic(cur_relation);
+
+
+    // //==================== Create another relation and display the information ====================
+    // relation__create(&db, "Professor", TYPE_STRING, 25);
+    // cur_relation = &db.relations[1];
+    // relation_display_info(cur_relation);
+    //
+    // //-------------------- Display the information of a non-exist relation--------------------
+    // relation_display_info(&db.relations[2]);
+    // printf("\nTotal slotted data page: %d\n\n", dpage__statistics(cur_relation->page_header));
 
 }
 

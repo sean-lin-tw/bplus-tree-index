@@ -85,7 +85,7 @@ void dpage__find_record(directory_page_t* cur_dirct,
     } else {
         if(action == ACTION_PRINT) printf("Pid: %d\n", pid);
         if(cur_dirct->entry[dirct_entry_id].rpage!=NULL)
-            rpage__find_record(&cur_dirct->entry[dirct_entry_id], slot_number, record_size, key_type, action);
+            rpage__find_record(&(cur_dirct->entry[dirct_entry_id]), slot_number, record_size, key_type, action);
         else
             fprintf(stderr, "Warning: Cannot find the record with <pid, slot#>: <%d, %d>\n", pid, slot_number);
     }

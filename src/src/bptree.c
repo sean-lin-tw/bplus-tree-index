@@ -255,6 +255,10 @@ data_entry_t bp__find_record(tree_page_ptr_t root, index_t key, int level, bp_ke
     else
         printf("Cannot find the record with key-%s\n", key.str);
 
+    data_entry_t fail_record;
+    fail_record.pid = -1;
+    fail_record.slot_num = -1;
+    return fail_record;
 }
 
 

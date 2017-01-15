@@ -21,8 +21,15 @@ data_entry_t relation__insert(relation_t* relation,
                               index_t key,
                               const char* remained_record);
 
+void relation__index_scan(relation_t* relation);
+
 void relation__find(relation_t* relation, index_t key);
 
+void relation__find_range(relation_t* relation, index_t key1, index_t key2);
+
+void relation__page_display(relation_t* relation, uint16_t pid);
+
+void relation__statistic(relation_t* relation);
 
 
 struct relation_s {
