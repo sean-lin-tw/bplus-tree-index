@@ -58,7 +58,7 @@ void bp__range_search(tree_page_ptr_t root, index_t key1, index_t key2, int leve
 
 int bp__scan(tree_page_ptr_t node, int level, bp_key_t ktype, int is_print);
 
-void print_entries(tree_page_ptr_t t_ptr, tree_page_t etype);
+void print_entries(tree_page_ptr_t t_ptr, tree_page_t etype, bp_key_t ktype);
 
 
 struct data_entry_s {

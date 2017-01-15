@@ -301,7 +301,7 @@ int bp__scan(tree_page_ptr_t node, int level, bp_key_t ktype, int is_print)
     // If the node is "branch"
     if(level > 0) {
         if(is_print)
-            print_entries(node, TYPE_BRANCH);
+            print_entries(node, TYPE_BRANCH, ktype);
 
         count += bp__scan(node.branch->first_ptr, level-1, ktype, is_print);
         for(int i=0; i<PAGE_ENTRY_SIZE; i++) {
@@ -314,13 +314,13 @@ int bp__scan(tree_page_ptr_t node, int level, bp_key_t ktype, int is_print)
         // If the node is "leaf"
     } else {
         if(is_print)
-            print_entries(node, TYPE_LEAF);
+            print_entries(node, TYPE_LEAF, ktype);
         return 1;
     }
 }
 
 
-void print_entries(tree_page_ptr_t t_ptr, tree_page_t etype) {
+void print_entries(tree_page_ptr_t t_ptr, tree_page_t etype, bp_key_t ktype) {
 
     if(t_ptr.branch == NULL)
         return;
@@ -347,7 +347,10 @@ void print_entries(tree_page_ptr_t t_ptr, tree_page_t etype) {
 
     if(etype == TYPE_LEAF) {
         for(int j=0; j<PAGE_ENTRY_SIZE; j++) {
-            printf("%4d|", t_ptr.leaf->dentry[j].key.i);
+            if(ktype == TYPE_INT)
+                printf("%4d|", t_ptr.leaf->dentry[j].key.i);
+            else
+                printf("%4s|", t_ptr.leaf->dentry[j].key.str);
         }
         printf("\n");
         printf("------|");
@@ -371,7 +374,10 @@ void print_entries(tree_page_ptr_t t_ptr, tree_page_t etype) {
         }
     } else {
         for(int j=0; j<PAGE_ENTRY_SIZE; j++) {
-            printf("%4d|", t_ptr.branch->tentry[j].key.i);
+            if(ktype == TYPE_INT)
+                printf("%4d|", t_ptr.branch->tentry[j].key.i);
+            else
+                printf("%4s|", t_ptr.branch->tentry[j].key.str);
         }
     }
 
