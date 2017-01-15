@@ -4,14 +4,27 @@
 #include <sstream>
 #include <stdexcept>
 #include <vector>
+#include <string>
+#include <string.h>
+
+extern "C"
+{
+#include "include/relation.h"
+}
 
 using namespace std;
 
 inline string trim(string& str);
 int err_handler(int vec_size, int required_size);
+void key_coppier(relation_t* cur_relation, index_t* key, string target);
 
 int main()
 {
+    //-------------------- Initial a database --------------------
+    relation_page_t db = {0};
+    relation_t* cur_relation;
+    index_t insert_key, backup_key;
+
     // Command type: R, I, D, S, q, c, d, p
     cout << endl;
     cout << "press R to Create relation" << endl;
@@ -21,7 +34,7 @@ int main()
     cout << "      q to Search single value/ Range " << endl;
     cout << "      c to Data page statistics" << endl;
     cout << "      p to Display specific data page " << endl;
-    cout << "      quit to leave the program\n\n" << endl;
+    cout << "      quit or exit to leave the program\n\n" << endl;
 
     string command, token_comma, token_else;
     vector<string> buffer_comma, buffer_else;
@@ -44,11 +57,13 @@ int main()
 
         if(buffer_comma.at(0)=="R") {
             if(err_handler(buffer_comma.size(), 4)) {
-                for(int i=1; i<=buffer_comma.size()-1; ++i)
-                    cout << buffer_comma.at(i);
-                cout << endl;
+                if(buffer_comma.at(2) == "integer")
+                    relation__create(&db, buffer_comma.at(1).c_str(), TYPE_INT, stoi(buffer_comma.at(3)));
+                else if(buffer_comma.at(2) == "String")
+                    relation__create(&db, buffer_comma.at(1).c_str(), TYPE_STRING, stoi(buffer_comma.at(3)));
             }
-        } else if(buffer_comma.at(0)=="I") {
+        }
+        else if(buffer_comma.at(0)=="I") {
             // get relation-name
             buffer_else.push_back(buffer_comma.at(1));
 
@@ -66,15 +81,19 @@ int main()
                 ss_else.clear();
             }
 
+            cur_relation = get_relation(&db, buffer_else.at(0).c_str());
             /* !!!!!!Remember to do error handling!!!!!! */
-            for (int i=0; i<buffer_else.size(); ++i)
-                cout << buffer_else.at(i);
-            cout << endl;
+            for (int i=1; i<buffer_else.size(); i+=2) {
+                key_coppier(cur_relation, &insert_key, buffer_else.at(i));
+                relation__insert(cur_relation, insert_key, buffer_else.at(i+1).c_str());
+            }
 
-        } else if(buffer_comma.at(0)=="D") {
+        }
+        else if(buffer_comma.at(0)=="D") {
             if(err_handler(buffer_comma.size(), 3))
                 cout << buffer_comma.at(1) << buffer_comma.at(2) << endl;
-        } else if(buffer_comma.at(0)=="quit") {
+        }
+        else if(buffer_comma.at(0)=="quit" || buffer_comma.at(0)=="exit") {
             break;
         }
         // string seperated with space
@@ -86,27 +105,39 @@ int main()
 
             /* handle different operations */
             if(buffer_else.at(0)=="s" || buffer_else.at(0)=="Scan" ) {
+                cur_relation = get_relation(&db, buffer_else.at(1).c_str());
                 if(err_handler(buffer_else.size(), 2))
-                    cout << buffer_else.at(1) << endl;
-            } else if(buffer_else.at(0)=="q") {
+                    relation__index_scan(cur_relation);
+            }
+            else if(buffer_else.at(0)=="q") {
+                cur_relation = get_relation(&db, buffer_else.at(1).c_str());
+
                 if(buffer_else.size() < 3) {
                     cout<< "Not enough Input(s). "
                         << "Please enter again." << endl;
                 } else if (buffer_else.size() > 4) {
                     cout<< "Too many Inputs. "
                         << "Please enter again." << endl;
-                } else {
-                    for (int i=1; i<buffer_else.size(); ++i)
-                        cout << buffer_else.at(i);
-                    cout << endl;
+                } else if(buffer_else.size() == 3) {
+                    key_coppier(cur_relation, &insert_key, buffer_else.at(2));
+                    relation__find(cur_relation, insert_key);
+                } else if(buffer_else.size() == 4) {
+                    key_coppier(cur_relation, &insert_key, buffer_else.at(2));
+                    key_coppier(cur_relation, &backup_key, buffer_else.at(3));
+                    relation__find_range(cur_relation, insert_key, backup_key);
                 }
-            } else if(buffer_else.at(0)=="c") {
+            }
+            else if(buffer_else.at(0)=="c") {
+                cur_relation = get_relation(&db, buffer_else.at(1).c_str());
                 if(err_handler(buffer_else.size(), 2))
-                    cout << buffer_else.at(1) << endl;
-            } else if(buffer_else.at(0)=="p") {
+                    relation__statistic(cur_relation);
+            }
+            else if(buffer_else.at(0)=="p") {
+                cur_relation = get_relation(&db, buffer_else.at(1).c_str());
                 if(err_handler(buffer_else.size(), 3))
-                    cout << buffer_else.at(1) << buffer_else.at(2) << endl;
-            } else {
+                    relation__page_display(cur_relation, stoi(buffer_else.at(2)));
+            }
+            else {
                 cout << "Incorrect input type. "
                      << "Please enter a new command." << endl;
             }
@@ -148,4 +179,11 @@ int err_handler(int vec_size, int required_size)
     } else {
         return 1;
     }
+}
+
+void key_coppier(relation_t* cur_relation, index_t* key, string target) {
+    if(cur_relation->ktype == TYPE_INT)
+        (*key).i = stoi(target);
+    else
+        strncpy((*key).str, target.c_str(), 10);
 }
