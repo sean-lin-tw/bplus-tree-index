@@ -127,8 +127,7 @@ int main()
         else if(buffer_comma.at(0)=="D") {
             if(err_handler(buffer_comma.size(), 3)) {
                 cur_relation = get_relation(&db, buffer_comma.at(1).c_str());
-                stoi_err_handler(buffer_comma.at(2));
-                if (cur_relation->ktype == TYPE_INT && stoi_err_handler(buffer_comma.at(2))==0) {
+                if (cur_relation->ktype==TYPE_INT && !stoi_err_handler(buffer_comma.at(2))) {
                     continue;
                 } else {
                     // key_coppier(cur_relation, &insert_key, buffer_comma.at(2));
