@@ -203,7 +203,7 @@ void rpage__find_record(record_page_entry_t* page_entry,
             if(key_type == TYPE_INT) {
                 printf("Slot-%d: key: %d, record: %s\n", sid, key.i, remained_record);
             } else {
-                printf("Slot-%d: key: %s, record: %s\n", sid, key.str, remained_record);
+                printf("Slot-%d: key: %.*s, record: %s\n", sid, 10, key.str, remained_record);
             }
             printf("        offset-%d, reclen-%d\n", slot_entry->offset, slot_entry->reclen);
 

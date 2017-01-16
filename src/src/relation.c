@@ -38,6 +38,25 @@ relation_t* relation__create(relation_page_t* header,
 
 
 
+relation_t* get_relation(relation_page_t* header, const char* relation_name)
+{
+    if(header == NULL)
+        return NULL;
+
+    relation_t* target;
+
+    while(header!=NULL) {
+        for(int i=0; i<RELATION_PAGE_SIZE; i++) {
+            if(strcmp(header->relations[i].name, relation_name) == 0)
+                return &(header->relations[i]);
+        }
+        header = header->next;
+    }
+
+    return NULL;
+}
+
+
 void relation_display_info(relation_t* relation)
 {
 
