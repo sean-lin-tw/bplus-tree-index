@@ -94,8 +94,14 @@ void bp__insert(tree_page_ptr_t* root,
 
         if (*new_child == NULL)
             return;
-        /* We've splited the leaf page */
+        /* We've splited the lower page */
         else {
+			/* set uplevel */
+			if (level > 1)
+				(*new_child)->page_ptr.branch->uplevel = node.branch;
+			else
+				(*new_child)->page_ptr.leaf->uplevel = node.branch;
+
             /* we need to split this upper page as well  */
             if (node.branch->occupy == PAGE_ENTRY_SIZE) {
                 tree_page_ptr_t new_branch = bp__new_page(TYPE_BRANCH);
@@ -156,7 +162,6 @@ void bp__insert(tree_page_ptr_t* root,
             memcpy(tmp_dentry, node.leaf->dentry, sizeof(data_entry_t)*PAGE_ENTRY_SIZE);
             tmp_dentry[PAGE_ENTRY_SIZE] = *entry;
 
-
             // sort entries
             bp__sort(tmp_dentry, PAGE_ENTRY_SIZE+1, sizeof(data_entry_t), TYPE_LEAF, type);
 
@@ -170,7 +175,7 @@ void bp__insert(tree_page_ptr_t* root,
             // set new_child
             (*new_child)->page_ptr = new_leaf;
             (*new_child)->key = new_leaf.leaf->dentry[0].key;
-
+			
             // set sibling pointers
             new_leaf.leaf->next = node.leaf->next;
             new_leaf.leaf->prev = node.leaf;
