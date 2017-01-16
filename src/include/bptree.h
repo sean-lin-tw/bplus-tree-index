@@ -62,6 +62,14 @@ int bp__scan_leaf(tree_page_ptr_t node, int level);
 
 void print_entries(tree_page_ptr_t t_ptr, tree_page_t etype, bp_key_t ktype);
 
+void bp__delete(tree_page_ptr_t* root,
+                tree_page_ptr_t node,
+                index_t key,
+                tree_entry_t** old_child,
+				int call_entry_idx,
+                int level,
+                int* total_level,
+                bp_key_t type);
 
 struct data_entry_s {
     uint16_t pid;
@@ -89,7 +97,7 @@ struct branch_page_s {
 struct leaf_page_s {
     uint8_t occupy;
 
-//  branch_page_t* uplevel;
+	branch_page_t* uplevel;
     leaf_page_t* prev;
     leaf_page_t* next;
 
