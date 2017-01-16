@@ -96,11 +96,11 @@ void bp__insert(tree_page_ptr_t* root,
             return;
         /* We've splited the lower page */
         else {
-			/* set uplevel */
-			if (level > 1)
-				(*new_child)->page_ptr.branch->uplevel = node.branch;
-			else
-				(*new_child)->page_ptr.leaf->uplevel = node.branch;
+            /* set uplevel */
+            if (level > 1)
+                (*new_child)->page_ptr.branch->uplevel = node.branch;
+            else
+                (*new_child)->page_ptr.leaf->uplevel = node.branch;
 
             /* we need to split this upper page as well  */
             if (node.branch->occupy == PAGE_ENTRY_SIZE) {
@@ -175,7 +175,7 @@ void bp__insert(tree_page_ptr_t* root,
             // set new_child
             (*new_child)->page_ptr = new_leaf;
             (*new_child)->key = new_leaf.leaf->dentry[0].key;
-			
+
             // set sibling pointers
             new_leaf.leaf->next = node.leaf->next;
             new_leaf.leaf->prev = node.leaf;
@@ -189,6 +189,11 @@ void bp__insert(tree_page_ptr_t* root,
                 new_root.branch->first_ptr = node;
                 (*root).branch = new_root.branch;
                 (*total_level)++;
+
+                // set uplevel
+                node.leaf->uplevel = root->branch;
+                new_leaf.leaf->uplevel = root->branch;
+
                 free(*new_child);
             }
 
@@ -349,7 +354,8 @@ int bp__scan_leaf(tree_page_ptr_t node, int level)
     }
 }
 
-void print_entries(tree_page_ptr_t t_ptr, tree_page_t etype, bp_key_t ktype) {
+void print_entries(tree_page_ptr_t t_ptr, tree_page_t etype, bp_key_t ktype)
+{
 
     if(t_ptr.branch == NULL)
         return;
@@ -410,7 +416,7 @@ void print_entries(tree_page_ptr_t t_ptr, tree_page_t etype, bp_key_t ktype) {
     printf("\n");
 }
 
-// TODO: 
+// TODO:
 // root deletion
 //
 // refactor
@@ -419,17 +425,17 @@ void bp__delete(tree_page_ptr_t* root,
                 tree_page_ptr_t node,
                 index_t key,
                 tree_entry_t** old_child,
-				int call_entry_idx,
+                int call_entry_idx,
                 int level,
                 int* total_level,
                 bp_key_t type)
 
 {
     // Find the leaf page and the slot(s) for delete
-	/* non-leaf */
-	if (level > 0) {
-	
-		/* Find the child */
+    /* non-leaf */
+    if (level > 0) {
+
+        /* Find the child */
         if (key__cmp(node.branch->tentry[0].key, key, type) > 0) {
             bp__delete(root, node.branch->first_ptr, key, old_child, -1, level-1, total_level, type);
         } else if (node.branch->tentry[PAGE_ENTRY_SIZE-1].page_ptr.leaf!=NULL &&
@@ -438,297 +444,303 @@ void bp__delete(tree_page_ptr_t* root,
         } else {
             for (int i=0; i<PAGE_ENTRY_SIZE-1; i++) {
                 if ((key__cmp(node.branch->tentry[i].key, key, type) <= 0 &&
-                        (key__cmp(node.branch->tentry[i+1].key, key, type))) > 0 ||
-                        node.branch->tentry[i+1].page_ptr.leaf==NULL) {
+                    (key__cmp(node.branch->tentry[i+1].key, key, type)) > 0) ||
+                     node.branch->tentry[i+1].page_ptr.leaf==NULL) {
                     bp__delete(root, node.branch->tentry[i].page_ptr, key, old_child, i, level-1, total_level, type);
                     break;
                 }
             }
         }
-		/* No merge happened in leaf */
-		if (*old_child == NULL)
-			return;
-		/* Merge happened. Delete child */
-		else {
-			// remove old_child from this page
-			int offset = (*old_child - node.branch->tentry)/sizeof(tree_entry_t);
-			tree_page_ptr_t *orphan = &((*old_child)->page_ptr);
-			node.branch->tentry[offset] = node.branch->tentry[node.branch->occupy-1];	
-			node.branch->occupy--;
+        /* No merge happened in leaf */
+        if (*old_child == NULL)
+            return;
+        /* Merge happened. Delete child */
+        else {
+            // remove old_child from this page
+            int offset = (*old_child - node.branch->tentry);
+            tree_page_ptr_t *orphan = &((*old_child)->page_ptr);
+            node.branch->tentry[offset] = node.branch->tentry[node.branch->occupy-1];
+            node.branch->occupy--;
 
-			/* this is root */
-			if (root->branch == node.branch) {
-				if (node.branch->occupy == 0) {// only entry left in root
-					// free orphan page
-					free(orphan);
-					tree_page_ptr_t *old_root = root;
+            /* this is root */
+            if (root->branch == node.branch) {
+                if (node.branch->occupy == 0) {// only entry left in root
+                    
+                    // reset root pointer
+					branch_page_t *old_root = root->branch;
+					if (level > 1)
+                   		root->branch = (&(root->branch->first_ptr)) ?(root->branch->first_ptr.branch) :&(root->branch->tentry[0].page_ptr.branch);
+					else
+                   		root->leaf = (&(root->branch->first_ptr)) ?(root->branch->first_ptr.leaf) :&(root->branch->tentry[0].page_ptr.leaf);
 
-					// reset root pointer
-					root = &(root->branch->first_ptr);
-					
-					// free old root
-					free(old_root);
-				}
-				else		
-            		bp__sort(node.branch->tentry, (size_t)node.branch->occupy, sizeof(tree_entry_t), TYPE_BRANCH, type);
-				return;
-			}
-				
-			// enough entries left to spare
-			if (node.branch->occupy > floor(PAGE_ENTRY_SIZE/2)) {
-				*old_child = NULL;
-				return;
-			} 
-			else {
-				// try to re-distribute from siblings
-				branch_page_t *prev = (call_entry_idx < 0) ?NULL :(
-								      (call_entry_idx == 0) ?node.branch->uplevel->first_ptr.branch 
-									                        :node.branch->uplevel->tentry[call_entry_idx-1].page_ptr.branch);
+                    // free old root
+                    free(old_root);
+					(*total_level)--;	
+                } else
+                    bp__sort(node.branch->tentry, (size_t)node.branch->occupy, sizeof(tree_entry_t), TYPE_BRANCH, type);
+				*old_child = NULL;				
+                return;
+            }
 
-				branch_page_t *next = (call_entry_idx < PAGE_ENTRY_SIZE-1 && call_entry_idx < node.branch->occupy) ?node.branch->uplevel->tentry[call_entry_idx+1].page_ptr.branch :NULL;
+            // enough entries left to spare
+            if (node.branch->occupy > floor(PAGE_ENTRY_SIZE/2)) {
+                *old_child = NULL;
+                return;
+            } else {
+                // try to re-distribute from siblings
+                branch_page_t *prev = (call_entry_idx < 0) ?NULL :(
+                                          (call_entry_idx == 0) ?node.branch->uplevel->first_ptr.branch
+                                          :node.branch->uplevel->tentry[call_entry_idx-1].page_ptr.branch);
 
-				/* left re-distribution*/
-				if (call_entry_idx >= 0 && prev->occupy > floor(PAGE_ENTRY_SIZE/2)) {			
-           			
-					// sort in tmp_tentry  
-					uint8_t sum_entries = node.branch->occupy + prev->occupy; 
-					tree_entry_t tmp_tentry[sum_entries];
-         	 		memcpy(tmp_tentry, node.branch->tentry, sizeof(tree_entry_t)*node.branch->occupy);
-					memcpy(tmp_tentry + sizeof(tree_entry_t)*node.branch->occupy, prev->tentry, sizeof(tree_entry_t)*prev->occupy);
-            		bp__sort(tmp_tentry, sum_entries, sizeof(tree_entry_t), TYPE_BRANCH, type);
+                branch_page_t *next = (call_entry_idx < PAGE_ENTRY_SIZE-1 && call_entry_idx < node.branch->occupy) ?node.branch->uplevel->tentry[call_entry_idx+1].page_ptr.branch :NULL;
 
-					// evenly spare the entries into the two pages
-					memset(prev->tentry, 0, sizeof(tree_entry_t)*PAGE_ENTRY_SIZE);
-				  	memcpy(prev->tentry, &tmp_tentry, sizeof(tree_entry_t)*floor(sum_entries/2));
-				  	prev->occupy = floor(sum_entries/2);
-				  	memset(node.branch->tentry, 0, sizeof(tree_entry_t)*PAGE_ENTRY_SIZE);
-				  	memcpy(node.branch->tentry, tmp_tentry+sizeof(tree_entry_t)*(size_t)floor(sum_entries/2), sizeof(tree_entry_t)*ceil(sum_entries/2));
-				  	node.branch->occupy = ceil(sum_entries/2);
+                /* left re-distribution*/
+                if (call_entry_idx >= 0 && prev->occupy > floor(PAGE_ENTRY_SIZE/2)) {
 
-				  	// replace the key value of the parent level
-					node.branch->uplevel->tentry[call_entry_idx].key = node.branch->tentry[0].key;
-					*old_child = NULL;
-					return;
-				}
-				/* right re-distribution*/
-				else if (call_entry_idx < PAGE_ENTRY_SIZE-1 && 
-						 next != NULL && 
-						 next->occupy > floor(PAGE_ENTRY_SIZE/2) ) {
+                    // sort in tmp_tentry
+                    uint8_t sum_entries = node.branch->occupy + prev->occupy;
+                    tree_entry_t tmp_tentry[sum_entries];
+                    memcpy(tmp_tentry, node.branch->tentry, sizeof(tree_entry_t)*node.branch->occupy);
+                    memcpy(tmp_tentry + sizeof(tree_entry_t)*node.branch->occupy, prev->tentry, sizeof(tree_entry_t)*prev->occupy);
+                    bp__sort(tmp_tentry, sum_entries, sizeof(tree_entry_t), TYPE_BRANCH, type);
 
-           			// sort in tmp_tentry  
-					uint8_t sum_entries = node.branch->occupy + next->occupy; 
-					tree_entry_t tmp_tentry[sum_entries];
-          			memcpy(tmp_tentry, node.branch->tentry, sizeof(tree_entry_t)*node.branch->occupy);
-					memcpy(tmp_tentry + sizeof(tree_entry_t)*node.branch->occupy, next->tentry, sizeof(tree_entry_t)*next->occupy);
-           		 	bp__sort(tmp_tentry, sum_entries, sizeof(tree_entry_t), TYPE_BRANCH, type);
+                    // evenly spare the entries into the two pages
+                    memset(prev->tentry, 0, sizeof(tree_entry_t)*PAGE_ENTRY_SIZE);
+                    memcpy(prev->tentry, &tmp_tentry, sizeof(tree_entry_t)*floor(sum_entries/2));
+                    prev->occupy = floor(sum_entries/2);
+                    memset(node.branch->tentry, 0, sizeof(tree_entry_t)*PAGE_ENTRY_SIZE);
+                    memcpy(node.branch->tentry, tmp_tentry+sizeof(tree_entry_t)*(size_t)floor(sum_entries/2), sizeof(tree_entry_t)*ceil(sum_entries/2));
+                    node.branch->occupy = ceil(sum_entries/2);
 
-	    	        // evenly spare the entries into the two pages
-	    	        memset(node.branch->tentry, 0, sizeof(tree_entry_t)*PAGE_ENTRY_SIZE);
-        	    	memcpy(node.branch->tentry, &tmp_tentry, sizeof(tree_entry_t)*floor(sum_entries/2));
-        	    	node.branch->occupy = floor(sum_entries/2);
-	    	        memset(next->tentry, 0, sizeof(tree_entry_t)*PAGE_ENTRY_SIZE);
-        	    	memcpy(next->tentry, tmp_tentry+sizeof(tree_entry_t)*(size_t)floor(sum_entries/2), sizeof(tree_entry_t)*ceil(sum_entries/2));
-        	    	next->occupy = ceil(sum_entries/2);
+                    // replace the key value of the parent level
+                    node.branch->uplevel->tentry[call_entry_idx].key = node.branch->tentry[0].key;
+                    *old_child = NULL;
+                    return;
+                }
+                /* right re-distribution*/
+                else if (call_entry_idx < PAGE_ENTRY_SIZE-1 &&
+                         next != NULL &&
+                         next->occupy > floor(PAGE_ENTRY_SIZE/2) ) {
 
-					// replace the key value of the parent level
-					node.branch->uplevel->tentry[call_entry_idx+1].key = next->tentry[0].key;
-					*old_child = NULL;
-					return;
-				}
-				// otherwise, merge with a neighbor
-				else {
-										/* right-merge */
-					if (call_entry_idx < 0) {
+                    // sort in tmp_tentry
+                    uint8_t sum_entries = node.branch->occupy + next->occupy;
+                    tree_entry_t tmp_tentry[sum_entries];
+                    memcpy(tmp_tentry, node.branch->tentry, sizeof(tree_entry_t)*node.branch->occupy);
+                    memcpy(tmp_tentry + sizeof(tree_entry_t)*node.branch->occupy, next->tentry, sizeof(tree_entry_t)*next->occupy);
+                    bp__sort(tmp_tentry, sum_entries, sizeof(tree_entry_t), TYPE_BRANCH, type);
 
-						// PULLDOWN, merge and sort  
-						uint8_t sum_entries = node.branch->occupy + next->occupy + 1;
-					   	memcpy(node.branch->tentry + sizeof(tree_entry_t)*node.branch->occupy, next->tentry, sizeof(tree_entry_t)*next->occupy);
-						node.branch->tentry[sum_entries-1].key = node.branch->uplevel->tentry[call_entry_idx+1].key;
-						node.branch->tentry[sum_entries-1].page_ptr = *orphan;
-						bp__sort(node.branch->tentry, sum_entries, sizeof(tree_entry_t), TYPE_LEAF, type);
-	            		node.branch->occupy = sum_entries;
-				
+                    // evenly spare the entries into the two pages
+                    memset(node.branch->tentry, 0, sizeof(tree_entry_t)*PAGE_ENTRY_SIZE);
+                    memcpy(node.branch->tentry, &tmp_tentry, sizeof(tree_entry_t)*floor(sum_entries/2));
+                    node.branch->occupy = floor(sum_entries/2);
+                    memset(next->tentry, 0, sizeof(tree_entry_t)*PAGE_ENTRY_SIZE);
+                    memcpy(next->tentry, tmp_tentry+sizeof(tree_entry_t)*(size_t)floor(sum_entries/2), sizeof(tree_entry_t)*ceil(sum_entries/2));
+                    next->occupy = ceil(sum_entries/2);
 
-						// The key that needs to be removed in the upper level
-						*old_child = &(node.branch->uplevel->tentry[call_entry_idx+1]);
+                    // replace the key value of the parent level
+                    node.branch->uplevel->tentry[call_entry_idx+1].key = next->tentry[0].key;
+                    *old_child = NULL;
+                    return;
+                }
+                // otherwise, merge with a neighbor
+                else {
+                    /* right-merge */
+                    if (call_entry_idx < 0) {
 
-						// garbage collection
-						free(next);
-					}
-					/* left-merge */
-					else {
-						// merge and sort  
-						uint8_t sum_entries = node.branch->occupy + prev->occupy; 
-	  					memcpy(node.branch->tentry + sizeof(tree_entry_t)*node.branch->occupy, prev->tentry, sizeof(tree_entry_t)*prev->occupy);
-						node.branch->tentry[sum_entries-1].key = node.branch->uplevel->tentry[call_entry_idx-1].key;
-						node.branch->tentry[sum_entries-1].page_ptr = *orphan;
-						bp__sort(node.branch->tentry, sum_entries, sizeof(tree_entry_t), TYPE_LEAF, type);
-	            		node.branch->occupy = sum_entries;
-				
-						// The key that needs to be removed in the upper level
-						*old_child = &(node.branch->uplevel->tentry[call_entry_idx-1]);
+                        // PULLDOWN, merge and sort
+                        uint8_t sum_entries = node.branch->occupy + next->occupy + 1;
+                        memcpy(node.branch->tentry + sizeof(tree_entry_t)*node.branch->occupy, next->tentry, sizeof(tree_entry_t)*next->occupy);
+                        node.branch->tentry[sum_entries-1].key = node.branch->uplevel->tentry[call_entry_idx+1].key;
+                        node.branch->tentry[sum_entries-1].page_ptr = *orphan;
+                        bp__sort(node.branch->tentry, sum_entries, sizeof(tree_entry_t), TYPE_LEAF, type);
+                        node.branch->occupy = sum_entries;
 
-						// garbage collection
-						free(prev);
-					}
-					return;
-				}
-			}
-		}
-	}
-	/* leaf */
-	else {
-		// enough entries left to spare
-		if (node.leaf->occupy > floor(PAGE_ENTRY_SIZE/2)) {
-			for (int i=0; i<node.leaf->occupy; i++) {
-				if (key__cmp(node.leaf->dentry[i].key, key, type) == 0) {
-					node.leaf->dentry[i] = node.leaf->dentry[node.leaf->occupy-1];	
-					node.leaf->occupy--;
-					break;
-				}
-			}
+                        // The key that needs to be removed in the upper level
+                        *old_child = &(node.branch->uplevel->tentry[call_entry_idx+1]);
+
+                        // garbage collection
+                        free(next);
+                    }
+                    /* left-merge */
+                    else {
+                        // merge and sort
+                        uint8_t sum_entries = node.branch->occupy + prev->occupy;
+                        memcpy(node.branch->tentry + sizeof(tree_entry_t)*node.branch->occupy, prev->tentry, sizeof(tree_entry_t)*prev->occupy);
+                        node.branch->tentry[sum_entries-1].key = node.branch->uplevel->tentry[call_entry_idx-1].key;
+                        node.branch->tentry[sum_entries-1].page_ptr = *orphan;
+                        bp__sort(node.branch->tentry, sum_entries, sizeof(tree_entry_t), TYPE_LEAF, type);
+                        node.branch->occupy = sum_entries;
+
+                        // The key that needs to be removed in the upper level
+                        *old_child = &(node.branch->uplevel->tentry[call_entry_idx-1]);
+
+                        // garbage collection
+                        free(prev);
+                    }
+                    return;
+                }
+            }
+        }
+    }
+    /* leaf */
+    else {
+        // enough entries left to spare
+        if (node.leaf->occupy > floor(PAGE_ENTRY_SIZE/2)) {
+            for (int i=0; i<node.leaf->occupy; i++) {
+                if (key__cmp(node.leaf->dentry[i].key, key, type) == 0) {
+                    node.leaf->dentry[i] = node.leaf->dentry[node.leaf->occupy-1];
+                    node.leaf->occupy--;
+                    break;
+                }
+            }
             bp__sort(node.leaf->dentry, (size_t)node.leaf->occupy, sizeof(data_entry_t), TYPE_LEAF, type);
-			*old_child = NULL;
-			return;
-		}
-		else {
-			// try to re-distribute from siblings
-			// TODO: consider boundary cases(e.g. NULL pages)
-			/* this is root */
-			if (root->leaf == node.leaf) {
-				if (node.leaf->occupy == 1) { // only entry left in root
-					node.leaf->occupy--;
-					return;
-				}
-				else {
-					// remove the entry
-					for (int i=0; i<node.leaf->occupy; i++) {
-						if (key__cmp(node.leaf->dentry[i].key, key, type) == 0) {
-							node.leaf->dentry[i] = node.leaf->dentry[node.leaf->occupy-1];	
-							node.leaf->occupy--;
-							break;
-						}
-					}
-            		bp__sort(node.leaf->dentry, (size_t)node.leaf->occupy, sizeof(data_entry_t), TYPE_LEAF, type);
-				}
-				return;
-			}
+            *old_child = NULL;
+            return;
+        } else {
+            // try to re-distribute from siblings
+            // TODO: consider boundary cases(e.g. NULL pages)
+            /* this is root */
+            if (root->leaf == node.leaf) {
+                if (node.leaf->occupy == 1) { // only entry left in root
+                    node.leaf->occupy--;
+                    return;
+                } else {
+                    // remove the entry
+                    for (int i=0; i<node.leaf->occupy; i++) {
+                        if (key__cmp(node.leaf->dentry[i].key, key, type) == 0) {
+                            node.leaf->dentry[i] = node.leaf->dentry[node.leaf->occupy-1];
+                            node.leaf->occupy--;
+                            break;
+                        }
+                    }
+                    bp__sort(node.leaf->dentry, (size_t)node.leaf->occupy, sizeof(data_entry_t), TYPE_LEAF, type);
+                }
+                return;
+            }
 
+            /* left re-distribution */
+            if (call_entry_idx >= 0 && node.leaf->prev->occupy > floor(PAGE_ENTRY_SIZE/2)) {
+                // remove the entry
+                for (int i=0; i<node.leaf->occupy; i++) {
+                    if (key__cmp(node.leaf->dentry[i].key, key, type) == 0) {
+                        node.leaf->dentry[i] = node.leaf->dentry[node.leaf->occupy-1];
+                        node.leaf->occupy--;
+                        break;
+                    }
+                }
+                // sort in tmp_dentry
+                uint8_t sum_entries = node.leaf->occupy + node.leaf->prev->occupy;
+                data_entry_t tmp_dentry[sum_entries];
+                memcpy(tmp_dentry, node.leaf->dentry, sizeof(data_entry_t)*node.leaf->occupy);
+                memcpy(&tmp_dentry[node.leaf->occupy], node.leaf->prev->dentry, sizeof(data_entry_t)*node.leaf->prev->occupy);
+                bp__sort(tmp_dentry, sum_entries, sizeof(data_entry_t), TYPE_LEAF, type);
 
-			if (node.leaf->prev->occupy > floor(PAGE_ENTRY_SIZE/2) && call_entry_idx >= 0) {			
-				// remove the entry
-				for (int i=0; i<node.leaf->occupy; i++) {
-					if (key__cmp(node.leaf->dentry[i].key, key, type) == 0) {
-						node.leaf->dentry[i] = node.leaf->dentry[node.leaf->occupy-1];	
-						node.leaf->occupy--;
-						break;
-					}
-				}
-           		// sort in tmp_dentry  
-				uint8_t sum_entries = node.leaf->occupy + node.leaf->prev->occupy; 
-				data_entry_t tmp_dentry[sum_entries];
-          		memcpy(tmp_dentry, node.leaf->dentry, sizeof(data_entry_t)*node.leaf->occupy);
-	            memcpy(tmp_dentry + sizeof(data_entry_t)*node.leaf->occupy, node.leaf->prev->dentry, sizeof(data_entry_t)*node.leaf->prev->occupy);
-            	bp__sort(tmp_dentry, sum_entries, sizeof(data_entry_t), TYPE_LEAF, type);
+                // evenly spare the entries into the two pages
+                memset(node.leaf->prev->dentry, 0, sizeof(data_entry_t)*PAGE_ENTRY_SIZE);
+                memcpy(node.leaf->prev->dentry, &tmp_dentry, sizeof(data_entry_t)*floor(sum_entries/2));
+                node.leaf->prev->occupy = floor(sum_entries/2);
+                memset(node.leaf->dentry, 0, sizeof(data_entry_t)*PAGE_ENTRY_SIZE);
+                memcpy(node.leaf->dentry, &tmp_dentry[(int)floor(sum_entries/2)], sizeof(data_entry_t)*ceil(sum_entries/2));
+                node.leaf->occupy = ceil(sum_entries/2);
 
-	            // evenly spare the entries into the two pages
-	            memset(node.leaf->prev->dentry, 0, sizeof(data_entry_t)*PAGE_ENTRY_SIZE);
-            	memcpy(node.leaf->prev->dentry, &tmp_dentry, sizeof(data_entry_t)*floor(sum_entries/2));
-            	node.leaf->prev->occupy = floor(sum_entries/2);
-	            memset(node.leaf->dentry, 0, sizeof(data_entry_t)*PAGE_ENTRY_SIZE);
-            	memcpy(node.leaf->dentry, tmp_dentry+sizeof(data_entry_t)*(size_t)floor(sum_entries/2), sizeof(data_entry_t)*ceil(sum_entries/2));
-            	node.leaf->occupy = ceil(sum_entries/2);
+                // replace the key value of the parent level
+                node.leaf->uplevel->tentry[call_entry_idx].key = node.leaf->dentry[0].key;
+                *old_child = NULL;
+                return;
+            }
+            /* right re-distribution */
+            else if (call_entry_idx < PAGE_ENTRY_SIZE-1 &&
+                     node.leaf->uplevel->tentry[call_entry_idx+1].page_ptr.leaf != NULL &&
+                     node.leaf->next->occupy > floor(PAGE_ENTRY_SIZE/2) ) {
+                // remove the entry
+                for (int i=0; i<node.leaf->occupy; i++) {
+                    if (key__cmp(node.leaf->dentry[i].key, key, type) == 0) {
+                        node.leaf->dentry[i] = node.leaf->dentry[node.leaf->occupy-1];
+                        node.leaf->occupy--;
+                        break;
+                    }
+                }
+                // sort in tmp_dentry
+                uint8_t sum_entries = node.leaf->occupy + node.leaf->next->occupy;
+                data_entry_t tmp_dentry[sum_entries];
+                memcpy(tmp_dentry, node.leaf->dentry, sizeof(data_entry_t)*node.leaf->occupy);
+                memcpy(&tmp_dentry[node.leaf->occupy], node.leaf->next->dentry, sizeof(data_entry_t)*node.leaf->next->occupy);
+                bp__sort(tmp_dentry, sum_entries, sizeof(data_entry_t), TYPE_LEAF, type);
 
-				// replace the key value of the parent level
-				node.leaf->uplevel->tentry[call_entry_idx].key = node.leaf->dentry[0].key;
-				*old_child = NULL;
-				return;
-			}
-			else if (call_entry_idx < PAGE_ENTRY_SIZE-1 && 
-					 node.leaf->uplevel->tentry[call_entry_idx+1].page_ptr.leaf != NULL && 
-					 node.leaf->next->occupy > floor(PAGE_ENTRY_SIZE/2) ) {
-				// remove the entry
-				for (int i=0; i<node.leaf->occupy; i++) {
-					if (key__cmp(node.leaf->dentry[i].key, key, type) == 0) {
-						node.leaf->dentry[i] = node.leaf->dentry[node.leaf->occupy-1];	
-						node.leaf->occupy--;
-						break;
-					}
-				}
-           		// sort in tmp_dentry  
-				uint8_t sum_entries = node.leaf->occupy + node.leaf->next->occupy; 
-				data_entry_t tmp_dentry[sum_entries];
-          		memcpy(tmp_dentry, node.leaf->dentry, sizeof(data_entry_t)*node.leaf->occupy);
-	            memcpy(tmp_dentry + sizeof(data_entry_t)*node.leaf->occupy, node.leaf->next->dentry, sizeof(data_entry_t)*node.leaf->next->occupy);
-            	bp__sort(tmp_dentry, sum_entries, sizeof(data_entry_t), TYPE_LEAF, type);
+                // evenly spare the entries into the two pages
+                memset(node.leaf->dentry, 0, sizeof(data_entry_t)*PAGE_ENTRY_SIZE);
+                memcpy(node.leaf->dentry, &tmp_dentry, sizeof(data_entry_t)*floor(sum_entries/2));
+                node.leaf->occupy = floor(sum_entries/2);
+                memset(node.leaf->next->dentry, 0, sizeof(data_entry_t)*PAGE_ENTRY_SIZE);
+                memcpy(node.leaf->next->dentry, &tmp_dentry[(int)floor(sum_entries/2)], sizeof(data_entry_t)*ceil(sum_entries/2));
+                node.leaf->next->occupy = ceil(sum_entries/2);
 
-	            // evenly spare the entries into the two pages
-	            memset(node.leaf->dentry, 0, sizeof(data_entry_t)*PAGE_ENTRY_SIZE);
-            	memcpy(node.leaf->dentry, &tmp_dentry, sizeof(data_entry_t)*floor(sum_entries/2));
-            	node.leaf->occupy = floor(sum_entries/2);
-	            memset(node.leaf->next->dentry, 0, sizeof(data_entry_t)*PAGE_ENTRY_SIZE);
-            	memcpy(node.leaf->next->dentry, tmp_dentry+sizeof(data_entry_t)*(size_t)floor(sum_entries/2), sizeof(data_entry_t)*ceil(sum_entries/2));
-            	node.leaf->next->occupy = ceil(sum_entries/2);
+                // replace the key value of the parent level
+                node.leaf->uplevel->tentry[call_entry_idx+1].key = node.leaf->next->dentry[0].key;
+                *old_child = NULL;
+                return;
+            }
+            // otherwise, merge with a neighbor
+            else {
+                /* right-merge */
+                if (call_entry_idx < 0) {
+                    // remove the entry
+                    for (int i=0; i<node.leaf->occupy; i++) {
+                        if (key__cmp(node.leaf->dentry[i].key, key, type) == 0) {
+                            node.leaf->dentry[i] = node.leaf->dentry[node.leaf->occupy-1];
+                            node.leaf->occupy--;
+                            break;
+                        }
+                    }
+                    // merge and sort
+                    uint8_t sum_entries = node.leaf->occupy + node.leaf->next->occupy;
+                    memcpy(node.leaf->dentry + node.leaf->occupy, node.leaf->next->dentry, sizeof(data_entry_t)*node.leaf->next->occupy);
+                    bp__sort(node.leaf->dentry, sum_entries, sizeof(data_entry_t), TYPE_LEAF, type);
+                    node.leaf->occupy = sum_entries;
 
-				// replace the key value of the parent level
-				node.leaf->uplevel->tentry[call_entry_idx+1].key = node.leaf->next->dentry[0].key;
-				*old_child = NULL;
-				return;
-			}
-			// otherwise, merge with a neighbor
-			else {
-				/* right-merge */
-				if (call_entry_idx < 0) {
-					// remove the entry
-					for (int i=0; i<node.leaf->occupy; i++) {
-						if (key__cmp(node.leaf->dentry[i].key, key, type) == 0) {
-							node.leaf->dentry[i] = node.leaf->dentry[node.leaf->occupy-1];	
-							node.leaf->occupy--;
-							break;
-						}
-					}
-					// merge and sort  
-					uint8_t sum_entries = node.leaf->occupy + node.leaf->next->occupy; 
-	  				memcpy(node.leaf->dentry + sizeof(data_entry_t)*node.leaf->occupy, node.leaf->next->dentry, sizeof(data_entry_t)*node.leaf->next->occupy);
-					bp__sort(node.leaf->dentry, sum_entries, sizeof(data_entry_t), TYPE_LEAF, type);
-	            	node.leaf->occupy = sum_entries;
-				
-					// The key that needs to be removed in the upper level
-					*old_child = &(node.leaf->uplevel->tentry[call_entry_idx+1]);
+                    // The key that needs to be removed in the upper level
+                    *old_child = &(node.leaf->uplevel->tentry[call_entry_idx+1]);
 
-					// adjust sibling pointers & garbage collection
-					leaf_page_t *gc_page = node.leaf->next;
-					node.leaf->next = node.leaf->next->next;
-					node.leaf->next->prev = node.leaf;
-					free(gc_page);
-				}
-				/* left-merge */
-				else {
-					// remove the entry
-					for (int i=0; i<node.leaf->occupy; i++) {
-						if (key__cmp(node.leaf->dentry[i].key, key, type) == 0) {
-							node.leaf->dentry[i] = node.leaf->dentry[node.leaf->occupy-1];	
-							node.leaf->occupy--;
-							break;
-						}
-					}
-					// merge and sort  
-					uint8_t sum_entries = node.leaf->occupy + node.leaf->prev->occupy; 
-	  				memcpy(node.leaf->dentry + sizeof(data_entry_t)*node.leaf->occupy, node.leaf->prev->dentry, sizeof(data_entry_t)*node.leaf->prev->occupy);
-					bp__sort(node.leaf->dentry, sum_entries, sizeof(data_entry_t), TYPE_LEAF, type);
-	            	node.leaf->occupy = sum_entries;
-				
-					// The key that needs to be removed in the upper level
-					*old_child = &(node.leaf->uplevel->tentry[call_entry_idx-1]);
+                    // adjust sibling pointers & garbage collection
+                    leaf_page_t *gc_page = node.leaf->next;
+                    node.leaf->next = node.leaf->next->next;
+					if (node.leaf->next)
+                    	node.leaf->next->prev = node.leaf;
+                    free(gc_page);
+					node.leaf->uplevel->tentry[call_entry_idx+1].page_ptr.leaf= NULL;
+                }
+                /* left-merge */
+                else {
+                    // remove the entry
+                    for (int i=0; i<node.leaf->occupy; i++) {
+                        if (key__cmp(node.leaf->dentry[i].key, key, type) == 0) {
+                            node.leaf->dentry[i] = node.leaf->dentry[node.leaf->occupy-1];
+                            node.leaf->occupy--;
+                            break;
+                        }
+                    }
+                    // merge and sort
+                    uint8_t sum_entries = node.leaf->occupy + node.leaf->prev->occupy;
+                    memcpy(&(node.leaf->dentry[node.leaf->occupy]), node.leaf->prev->dentry, sizeof(data_entry_t)*node.leaf->prev->occupy);
+                    bp__sort(node.leaf->dentry, sum_entries, sizeof(data_entry_t), TYPE_LEAF, type);
+                    node.leaf->occupy = sum_entries;
 
-					// adjust sibling pointers & garbage collection
-					leaf_page_t *gc_page = node.leaf->prev;
-					node.leaf->prev = node.leaf->prev->prev;
-					node.leaf->prev->next = node.leaf;
-					free(gc_page);
-				}
-				return;
-			}
-		}
-	}
+                    // The key that needs to be removed in the upper level
+                    *old_child = &(node.leaf->uplevel->tentry[call_entry_idx-1]);
+
+                    // adjust sibling pointers & garbage collection
+                    leaf_page_t *gc_page = node.leaf->prev;
+                    node.leaf->prev = node.leaf->prev->prev;
+					if (node.leaf->prev)
+                   	 	node.leaf->prev->next = node.leaf;
+                    free(gc_page);
+					if (call_entry_idx >= 0)
+						node.leaf->uplevel->tentry[call_entry_idx-1].page_ptr.leaf = NULL;
+					else
+						node.leaf->uplevel->first_ptr.leaf = NULL;
+                }
+                return;
+            }
+        }
+    }
 }
