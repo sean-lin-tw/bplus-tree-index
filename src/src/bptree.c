@@ -469,9 +469,9 @@ void bp__delete(tree_page_ptr_t* root,
                     // reset root pointer
 					branch_page_t *old_root = root->branch;
 					if (level > 1)
-                   		root->branch = (&(root->branch->first_ptr)) ?(root->branch->first_ptr.branch) :&(root->branch->tentry[0].page_ptr.branch);
+                   		root->branch = (&(root->branch->first_ptr)) ?(root->branch->first_ptr.branch) :(root->branch->tentry[0].page_ptr.branch);
 					else
-                   		root->leaf = (&(root->branch->first_ptr)) ?(root->branch->first_ptr.leaf) :&(root->branch->tentry[0].page_ptr.leaf);
+                   		root->leaf = (&(root->branch->first_ptr)) ?(root->branch->first_ptr.leaf) :(root->branch->tentry[0].page_ptr.leaf);
 
                     // free old root
                     free(old_root);
