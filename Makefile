@@ -25,8 +25,8 @@ relation.o: src/src/relation.c
 	$(CC) $(CFLAGS) -o $@ $<
 
 run: $(EXEC)
-	$(EXEC) < data/ProjectB_data > output.txt
+	./$(EXEC) < data/ProjectB_data > output.txt
 
 .PHONY: clean
 clean:
-	$(RM) $(EXEC) output.txt
+	$(RM) $(EXEC) $(OBJS) output.txt
