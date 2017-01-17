@@ -91,11 +91,40 @@ data_entry_t relation__insert(relation_t* relation,
     // Then insert the RID and key to B+Tree
     bp__insert(&(relation->root), relation->root, &inserted_entry,
                &tmp_new_child, relation->level, &(relation->level), relation->ktype);
+
 }
+
+
+void relation__delete(relation_t* relation, index_t key)
+{
+    if(relation->page_header == NULL) {
+        fprintf(stderr, "This relation is empty!\n");
+        return;
+    }
+
+    // Fetch the pid and slot# from B+tree
+    data_entry_t found_record = bp__find_record(relation->root, key, relation->level, relation->ktype);
+
+    // Delete the remained_record from data page
+    if(found_record.pid!=UINT16_MAX && found_record.slot_num!=UINT16_MAX) {
+        dpage__find_record(relation->page_header,
+                           relation->record_length,
+                           relation->ktype,
+                           found_record.pid,
+                           found_record.slot_num,
+                           ACTION_DELETE);
+    }
+
+    tree_entry_t* tmp_old_child = NULL;
+    bp__delete(&(relation->root), relation->root, key, &tmp_old_child,
+               0, relation->level, &(relation->level), relation->ktype);
+}
+
 
 void relation__index_scan(relation_t* relation)
 {
-    printf("\nTotal leaf pages: %d\n", bp__scan_leaf(relation->root, relation->level));
+    printf("\n******Scan: %s******\n", relation->name);
+    printf("Total leaf pages: %d\n", bp__scan_leaf(relation->root, relation->level));
     printf("Total index pages: %d\n", bp__scan(relation->root, relation->level, relation->ktype, 0));
 }
 
@@ -106,7 +135,7 @@ void relation__find(relation_t* relation, index_t key)
         fprintf(stderr, "This relation is empty!\n");
         return;
     }
-
+    printf("\n******Query: %s******\n", relation->name);
     // Fetch the pid and slot# from B+tree
     data_entry_t found_record = bp__find_record(relation->root, key, relation->level, relation->ktype);
     // Fetch the remained_record from data page
@@ -127,6 +156,8 @@ void relation__find_range(relation_t* relation, index_t key1, index_t key2)
     tree_page_ptr_t found_leaf = bp__get(relation->root, key1, relation->level, relation->ktype);
     data_entry_t found_record;
     int entry_index = -1;
+
+    printf("\n******Range Query: %s******\n", relation->name);
 
     for(int i=0; i<PAGE_ENTRY_SIZE; i++) {
         if(key__cmp(found_leaf.leaf->dentry[i].key, key1, relation->ktype)==0) {
@@ -169,6 +200,8 @@ void relation__find_range(relation_t* relation, index_t key1, index_t key2)
 
 void relation__page_display(relation_t* relation, uint16_t pid)
 {
+    printf("\n******Page Display: %s******\n", relation->name);
+
     directory_page_t* cur_dirct = relation->page_header;
     int dirct_id = pid / DIRECTORY_ENTRY_NUM;
     int dirct_entry_id = pid % DIRECTORY_ENTRY_NUM;
@@ -184,6 +217,8 @@ void relation__page_display(relation_t* relation, uint16_t pid)
 
 void relation__statistic(relation_t* relation)
 {
-    printf("\nTotal index pages: %d\n", bp__scan(relation->root, relation->level, relation->ktype, 0));
+    printf("\n******Statistic: %s******\n", relation->name);
+
+    printf("Total index pages: %d\n", bp__scan(relation->root, relation->level, relation->ktype, 0));
     printf("Total slotted data page: %d\n", dpage__statistics(relation->page_header));
 }

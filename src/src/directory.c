@@ -243,7 +243,7 @@ void rpage__show_page(record_page_entry_t* page_entry, uint16_t record_size, bp_
     printf("------------------------------------------------------\n");
     printf("Remained free space: %d bytes\n", page->dirct_end_ptr -page->free_ptr);
     printf("Page is full: ");
-    printf("%s", page_entry->is_full ? "True\n\n" : "False\n\n");
+    printf("%s", page_entry->is_full ? "True\n" : "False\n");
 }
 
 

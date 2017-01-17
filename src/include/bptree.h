@@ -66,7 +66,7 @@ void bp__delete(tree_page_ptr_t* root,
                 tree_page_ptr_t node,
                 index_t key,
                 tree_entry_t** old_child,
-				int call_entry_idx,
+				        int call_entry_idx,
                 int level,
                 int* total_level,
                 bp_key_t type);

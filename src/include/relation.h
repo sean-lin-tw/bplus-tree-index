@@ -23,6 +23,8 @@ data_entry_t relation__insert(relation_t* relation,
                               index_t key,
                               const char* remained_record);
 
+void relation__delete(relation_t* relation, index_t key);
+
 void relation__index_scan(relation_t* relation);
 
 void relation__find(relation_t* relation, index_t key);

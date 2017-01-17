@@ -4,7 +4,7 @@
 
 #include "../include/bptree.h"
 
-int main(void) 
+int main(void)
 {
 	tree_page_ptr_t root;
     root.leaf = (leaf_page_t*) calloc(1, sizeof(leaf_page_t));
@@ -20,15 +20,15 @@ int main(void)
         inserted_entry.slot_num = j;
         bp__insert(&root, root, &inserted_entry, &tmp_new_child, level, &level, TYPE_INT);
     }
-	
+
     tree_entry_t* tmp_old_child = NULL;
 
-	// Delete entries
+		// Delete entries
     for(int j=0; j<199; j++) {
-        index_t key; 
-		key.i = j;
+        index_t key;
+				key.i = j;
         bp__delete(&root, root, key, &tmp_old_child, 0, level, &level, TYPE_INT);
-		
+
 		/* first-level*/
 		int root_occupy = (level == 0)?root.leaf->occupy:root.branch->occupy;
 		for (int k=0; k<root_occupy; k++) {
@@ -57,8 +57,8 @@ int main(void)
 		puts("\n");
 		}
     }
-	
-	
+
+
 
 
 }

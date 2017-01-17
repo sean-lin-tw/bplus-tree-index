@@ -255,8 +255,7 @@ data_entry_t bp__find_record(tree_page_ptr_t root, index_t key, int level, bp_ke
 
     for(int i=0; i<PAGE_ENTRY_SIZE; i++) {
         if(key__cmp(found_leaf.leaf->dentry[i].key, key, type)==0) {
-            _print_data_entry(found_leaf.leaf->dentry[i], type);
-
+            // _print_data_entry(found_leaf.leaf->dentry[i], type);
             return found_leaf.leaf->dentry[i];
         }
     }
@@ -465,7 +464,7 @@ void bp__delete(tree_page_ptr_t* root,
             /* this is root */
             if (root->branch == node.branch) {
                 if (node.branch->occupy == 0) {// only entry left in root
-                    
+
                     // reset root pointer
 					branch_page_t *old_root = root->branch;
 					if (level > 1)
@@ -475,10 +474,10 @@ void bp__delete(tree_page_ptr_t* root,
 
                     // free old root
                     free(old_root);
-					(*total_level)--;	
+					(*total_level)--;
                 } else
                     bp__sort(node.branch->tentry, (size_t)node.branch->occupy, sizeof(tree_entry_t), TYPE_BRANCH, type);
-				*old_child = NULL;				
+				*old_child = NULL;
                 return;
             }
 

@@ -16,9 +16,10 @@ extern "C"
 using namespace std;
 
 inline string trim(string& str);
-int err_handler(int vec_size, int required_size);
-int stoi_err_handler(string target);
 void key_coppier(relation_t* cur_relation, index_t* key, string target);
+
+int err_handler(int vec_size, int required_size, string command);
+int stoi_err_handler(string target, string command);
 
 int main()
 {
@@ -28,7 +29,7 @@ int main()
     index_t insert_key, backup_key;
 
     // Command type: R, I, D, S, q, c, d, p
-    cout << endl;
+    cout << "B+Tree shell version: 0.0.1" << endl << endl;
     cout << "press R to Create relation" << endl;
     cout << "      I to Insert a record" << endl;
     cout << "      D to Delete a record" << endl;
@@ -71,7 +72,7 @@ int main()
             buffer_comma.push_back(trim(token_comma));
 
         if(buffer_comma.at(0)=="R") {
-            if(err_handler(buffer_comma.size(), 4)) {
+            if(err_handler(buffer_comma.size(), 4, command)) {
                 // handle the lower-case problem
                 transform(buffer_comma.at(2).begin(), buffer_comma.at(2).end(),
                           buffer_comma.at(2).begin(), ::tolower);
@@ -79,8 +80,10 @@ int main()
                     relation__create(&db, buffer_comma.at(1).c_str(), TYPE_INT, stoi(buffer_comma.at(3)));
                 else if(buffer_comma.at(2) == "string")
                     relation__create(&db, buffer_comma.at(1).c_str(), TYPE_STRING, stoi(buffer_comma.at(3)));
-                else
+                else {
+                    cout << "\n[Error command] " << command << endl;
                     cout << "Pleast enter a valid type" << endl;
+                }
             }
         }
         else if(buffer_comma.at(0)=="I") {
@@ -103,9 +106,11 @@ int main()
 
             /* !!!!!!Remember to do error handling!!!!!! */
             if (buffer_comma.size() < 4) {
+                cout << "\n[Error command] " << command << endl;
                 cout<< "Not enough Input(s). "
                     << "Please enter again." << endl;
             } else if (buffer_else.size()%2 != 1) {
+                cout << "\n[Error command] " << command << endl;
                 cout<< "Number of arguments are wrong. "
                     << "Please enter again." << endl;
             } else {
@@ -113,7 +118,7 @@ int main()
 
                 for (int i=1; i<buffer_else.size(); i+=2) {
                     key_coppier(cur_relation, &insert_key, buffer_else.at(i));
-                    if(cur_relation->ktype == TYPE_INT && stoi_err_handler(buffer_else.at(i))) {
+                    if(cur_relation->ktype == TYPE_INT && stoi_err_handler(buffer_else.at(i), command)) {
                         relation__insert(cur_relation, insert_key, buffer_else.at(i+1).c_str());
                     } else {
                         str_buffer = string("") + trim(buffer_else.at(i)) + string("]") + trim(buffer_else.at(i+1));
@@ -125,13 +130,14 @@ int main()
             }
         }
         else if(buffer_comma.at(0)=="D") {
-            if(err_handler(buffer_comma.size(), 3)) {
+            if(err_handler(buffer_comma.size(), 3, command)) {
                 cur_relation = get_relation(&db, buffer_comma.at(1).c_str());
-                if (cur_relation->ktype==TYPE_INT && !stoi_err_handler(buffer_comma.at(2))) {
+                if (cur_relation->ktype==TYPE_INT && !stoi_err_handler(buffer_comma.at(2), command)) {
                     continue;
                 } else {
-                    // key_coppier(cur_relation, &insert_key, buffer_comma.at(2));
-                    cout << buffer_comma.at(1) << buffer_comma.at(2) << endl;
+                    key_coppier(cur_relation, &insert_key, buffer_comma.at(2));
+                    // cout << buffer_comma.at(1) << buffer_comma.at(2) << endl;
+                    relation__delete(cur_relation, insert_key);
                 }
             }
         }
@@ -148,7 +154,7 @@ int main()
 
             /* handle different operations */
             if(buffer_else.at(0)=="s" || buffer_else.at(0)=="Scan" ) {
-                if(err_handler(buffer_else.size(), 2)) {
+                if(err_handler(buffer_else.size(), 2, command)) {
                     cur_relation = get_relation(&db, buffer_else.at(1).c_str());
                     relation__index_scan(cur_relation);
                 }
@@ -156,14 +162,16 @@ int main()
             else if(buffer_else.at(0)=="q") {
 
                 if(buffer_else.size() < 3) {
+                    cout << "\n[Error command] " << command << endl;
                     cout<< "Not enough Input(s). "
                         << "Please enter again." << endl;
                 } else if (buffer_else.size() > 4) {
+                    cout << "\n[Error command] " << command << endl;
                     cout<< "Too many Inputs. "
                         << "Please enter again." << endl;
                 } else if(buffer_else.size() == 3) {
                     cur_relation = get_relation(&db, buffer_else.at(1).c_str());
-                    if(cur_relation->ktype == TYPE_INT && !stoi_err_handler(buffer_else.at(2))) {
+                    if(cur_relation->ktype == TYPE_INT && !stoi_err_handler(buffer_else.at(2), command)) {
                         continue;
                     } else {
                         key_coppier(cur_relation, &insert_key, buffer_else.at(2));
@@ -172,7 +180,7 @@ int main()
                 } else if(buffer_else.size() == 4) {
                     cur_relation = get_relation(&db, buffer_else.at(1).c_str());
                     if(cur_relation->ktype == TYPE_INT &&
-                            (!stoi_err_handler(buffer_else.at(2)) || !stoi_err_handler(buffer_else.at(3)))) {
+                            (!stoi_err_handler(buffer_else.at(2), command) || !stoi_err_handler(buffer_else.at(3), command))) {
                         continue;
                     } else {
                         key_coppier(cur_relation, &insert_key, buffer_else.at(2));
@@ -182,14 +190,15 @@ int main()
                 }
             }
             else if(buffer_else.at(0)=="c") {
-                if(err_handler(buffer_else.size(), 2)) {
+                if(err_handler(buffer_else.size(), 2, command)) {
                     cur_relation = get_relation(&db, buffer_else.at(1).c_str());
                     relation__statistic(cur_relation);
                 }
             }
             else if(buffer_else.at(0)=="p") {
-                if(err_handler(buffer_else.size(), 3) && stoi_err_handler(buffer_else.at(2))) {
+                if(err_handler(buffer_else.size(), 3, command) && stoi_err_handler(buffer_else.at(2), command)) {
                     if(stoi(buffer_else.at(2)) < 0) {
+                        cout << "\n[Error command] " << command << endl;
                         cout << "Invalid page id. "
                              << "Please enter a new command." << endl;
                     } else {
@@ -199,6 +208,7 @@ int main()
                 }
             }
             else {
+                cout << "\n[Error command] " << command << endl;
                 cout << "Incorrect input type. "
                      << "Please enter a new command." << endl;
             }
@@ -218,20 +228,6 @@ inline string trim(string& str)
     return str;
 }
 
-int err_handler(int vec_size, int required_size)
-{
-    if(vec_size < required_size) {
-        cout<< "Not enough Input(s). "
-            << "Please enter again" << endl;
-        return 0;
-    } else if (vec_size > required_size) {
-        cout<< "Too many Inputs. "
-            << "Please enter again" << endl;
-        return 0;
-    } else {
-        return 1;
-    }
-}
 
 void key_coppier(relation_t* cur_relation, index_t* key, string target) {
     if(cur_relation->ktype == TYPE_INT)
@@ -240,11 +236,31 @@ void key_coppier(relation_t* cur_relation, index_t* key, string target) {
         strncpy((*key).str, trim(target).c_str(), 10);
 }
 
-int stoi_err_handler(string target) {
+
+int err_handler(int vec_size, int required_size, string command)
+{
+    if(vec_size < required_size) {
+        cout << "\n[Error command] " << command << endl;
+        cout<< "Not enough Input(s). "
+            << "Please enter again" << endl;
+        return 0;
+    } else if (vec_size > required_size) {
+        cout << "\n[Error command] " << command << endl;
+        cout<< "Too many Inputs. "
+            << "Please enter again" << endl;
+        return 0;
+    } else {
+        return 1;
+    }
+}
+
+
+int stoi_err_handler(string target, string command) {
     try {
         stoi(target);
         return 1;
     } catch (...) {
+        cout << "\n[Error command] " << command << endl;
         cout << "Invalid arguments. "
              << "Please enter a valid number" << endl;
         return 0;
