@@ -1,5 +1,5 @@
 # bplus-tree-index
-A simple in-memory B+Tree project with Page Directory, Variable Length Page Formats and Unclustered B+Tree Index.
+A simple in-memory B+Tree implementation with 1)Page Directory, 2)Variable Length Page Formats and 3)Unclustered B+Tree Index.
 
 ## Run with the test data
 Run the code with the test data provided by TA (in `data/ProjectB_data`)
@@ -44,4 +44,9 @@ make bp_delete_test
 -	Test Relation Manipulation
 ```bash
 make relation_test
+```
+
+## Clean the directory
+```bash
+make clean
 ```
